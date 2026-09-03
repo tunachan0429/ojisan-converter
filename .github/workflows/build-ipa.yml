@@ -1,0 +1,64 @@
+name: Build iOS IPA (unsigned for sideload)
+
+# 手動実行 or mainブランチへのpushでIPAを作る
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "www/**"
+      - "capacitor.config.json"
+      - "package.json"
+      - "ios/**"
+      - ".github/workflows/build-ipa.yml"
+
+jobs:
+  build-ipa:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Sync web assets to iOS
+        run: npx cap sync ios
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer || true; xcodebuild -version
+
+      - name: Install CocoaPods deps
+        working-directory: ios/App
+        run: pod install
+
+      - name: Build unsigned .app
+        working-directory: ios/App
+        run: |
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Package unsigned IPA
+        working-directory: ios/App
+        run: |
+          rm -rf Payload OjisanConverter-unsigned.ipa
+          mkdir Payload
+          cp -r build/Build/Products/Release-iphoneos/App.app Payload/
+          zip -r OjisanConverter-unsigned.ipa Payload
+          ls -lh OjisanConverter-unsigned.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OjisanConverter-unsigned-ipa
+          path: ios/App/OjisanConverter-unsigned.ipa

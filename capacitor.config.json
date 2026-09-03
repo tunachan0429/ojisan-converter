@@ -1,0 +1,9 @@
+{
+  "appId": "com.ojisan.converter",
+  "appName": "オジサン翻訳機",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "automatic",
+    "limitsNavigationsToAppBoundDomains": true
+  }
+}

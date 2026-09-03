@@ -1,0 +1,16 @@
+{
+  "name": "ojisan-converter",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "sync": "cap sync ios",
+    "open:ios": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.1.4",
+    "@capacitor/ios": "^6.1.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.4"
+  }
+}

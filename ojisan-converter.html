@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>オジサン翻訳機 | おじさん構文変換ツール</title>
+<meta name="description" content="普通の文章を一瞬でおじさん構文に変換。絵文字マシマシ・プリセット6種・LINEプレビュー・Gemini連携対応。">
+<style>
+:root{
+  --bg:#f6f5f1; --card:#ffffff; --ink:#1a1a1e; --muted:#6b7280; --line:#ece9e2;
+  --accent:#ff4d6d; --accent2:#ff8a3d; --accent-soft:#fff0f2;
+  --green:#0ea371; --yellow:#ffb020; --radius:18px;
+  --shadow:0 8px 30px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",Meiryo,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.topbar-inner{max-width:1160px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:.02em}
+.logo-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 6px 16px rgba(255,77,109,.3)}
+.nav{margin-left:auto;display:flex;gap:18px;font-size:14px;color:var(--muted);font-weight:600}
+.nav a{text-decoration:none}.nav a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:11px 20px;font-weight:800;font-size:14px;cursor:pointer;transition:.18s}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 8px 20px rgba(255,77,109,.28)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(255,77,109,.34)}
+.btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn-ghost:hover{border-color:#d8d3c8;background:#fffdf7}
+.btn-small{padding:8px 14px;font-size:13px}
+.wrap{max-width:1160px;margin:0 auto;padding:0 20px}
+.hero{padding:38px 0 18px;display:grid;grid-template-columns:1.2fr .8fr;gap:22px;align-items:start}
+@media(max-width:900px){.hero{grid-template-columns:1fr}.nav{display:none}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--muted)}
+.eyebrow i{width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.35}}
+h1{font-size:clamp(28px,4vw,44px);line-height:1.2;margin:14px 0 10px;letter-spacing:-.02em}
+h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--muted);font-size:15.5px;margin:0 0 16px}
+.hero-stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;min-width:140px;box-shadow:var(--shadow)}
+.stat b{font-size:20px;display:block}.stat span{font-size:12px;color:var(--muted);font-weight:700}
+.hero-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.hero-card h3{margin:0 0 8px;font-size:14px}
+.sample-chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:#fbf9f5;border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:13px;cursor:pointer;font-weight:600}
+.chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.app{margin:10px 0 26px;display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
+@media(max-width:1000px){.app{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.card h2{font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.card p.desc{font-size:13px;color:var(--muted);margin:0 0 14px}
+textarea{width:100%;min-height:170px;resize:vertical;border:1.5px solid var(--line);border-radius:14px;padding:14px;font-size:15px;line-height:1.8;font-family:inherit;background:#fffdf8;outline:none}
+textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(255,77,109,.1)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.field{flex:1;min-width:140px}
+.field label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:12px 0 6px}
+.field input,.field select{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;font-family:inherit;background:#fff;outline:none}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.toolbar{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.count{margin-left:auto;font-size:12px;color:var(--muted);font-weight:700}
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.preset{border:1.5px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;background:#fff;transition:.15s}
+.preset:hover{border-color:#f3b3bf}
+.preset.active{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 3px rgba(255,77,109,.12)}
+.preset b{font-size:13.5px;display:block}.preset span{font-size:12px;color:var(--muted)}
+.slider-row{margin:12px 0}
+.slider-row label{display:flex;justify-content:space-between;font-size:13px;font-weight:800}
+.slider-row label em{font-style:normal;background:#f3f0e9;border-radius:999px;padding:1px 10px;font-size:12px}
+input[type=range]{width:100%;accent-color:var(--accent);margin-top:8px}
+.toggles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.toggle{display:flex;align-items:center;gap:8px;background:#fbf9f5;border:1px solid var(--line);border-radius:12px;padding:9px 10px;font-size:13px;font-weight:700;cursor:pointer;user-select:none}
+.toggle input{accent-color:var(--accent);width:16px;height:16px}
+.emoji-pick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.emoji-pick button{border:1px solid var(--line);background:#fff;border-radius:10px;font-size:18px;padding:6px 9px;cursor:pointer}
+.emoji-pick button.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 3px rgba(255,77,109,.1)}
+.convert-bar{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:#1a1a1e;color:#fff;border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+.convert-bar .hint{font-size:13px;opacity:.75}
+.results{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:1000px){.results{grid-template-columns:1fr}}
+.result-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.result-head{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);font-size:13px;font-weight:800}
+.badge{font-size:11px;font-weight:800;border-radius:999px;padding:3px 10px;background:#f3f0e9}
+.badge.hot{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.result-body{padding:14px;font-size:14.5px;line-height:2;white-space:pre-wrap;background:#fffdf8;min-height:180px}
+.result-actions{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);flex-wrap:wrap;background:#fff}
+.icon-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:800;cursor:pointer}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent)}
+.meter-wrap{grid-column:1/-1;display:grid;grid-template-columns:1fr 360px;gap:14px}
+@media(max-width:1000px){.meter-wrap{grid-template-columns:1fr}}
+.score-bar{height:10px;background:#f0ede6;border-radius:999px;overflow:hidden;margin:8px 0}
+.score-fill{height:100%;background:linear-gradient(90deg,#ffd166,var(--accent2),var(--accent));border-radius:999px;transition:width .6s}
+.phone{background:#0f1419;border-radius:26px;padding:12px;box-shadow:var(--shadow)}
+.phone-screen{background:#8fa9c9;border-radius:18px;overflow:hidden;min-height:320px;display:flex;flex-direction:column}
+.line-header{background:#2f3a45;color:#fff;padding:10px 14px;font-size:13px;font-weight:800;display:flex;gap:8px;align-items:center}
+.line-body{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(#9ab4d3,#8fa9c9)}
+.bubble{background:#fff;border-radius:14px 14px 14px 4px;padding:10px 12px;font-size:13.5px;line-height:1.8;max-width:88%;box-shadow:0 2px 8px rgba(0,0,0,.12);white-space:pre-wrap}
+.bubble-time{font-size:10px;opacity:.6;margin-top:4px}
+.section{margin:26px 0}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:900px){.grid3{grid-template-columns:1fr}}
+.feat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+.feat h3{margin:8px 0 6px;font-size:15px}.feat p{margin:0;font-size:13.5px;color:var(--muted)}
+.feat .ico{font-size:26px}
+.gemini{border:2px dashed #e6c2cb;background:#fff7f8}
+.history-item{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;font-size:13px;background:#fffdf8;cursor:pointer}
+.history-item:hover{border-color:var(--accent)}
+.history-item small{color:var(--muted);display:block}
+details{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px 14px;margin-top:10px}
+summary{font-weight:800;cursor:pointer;font-size:14px}
+footer{margin:30px 0 40px;color:var(--muted);font-size:12.5px;text-align:center}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#1a1a1e;color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:.25s;z-index:99;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.kbd{font-size:11px;background:#f0ede6;border-radius:6px;padding:2px 7px;font-weight:800}
+.switch{display:flex;align-items:center;gap:10px;background:#fbf9f5;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:700}
+.switch input{width:18px;height:18px;accent-color:var(--accent)}
+.status-dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:#cbd5e1}
+.status-dot.ok{background:#22c55e}.status-dot.err{background:var(--accent)}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="logo"><div class="logo-mark">🍺</div> オジサン翻訳機 <span style="font-size:11px;background:#1a1a1e;color:#fff;border-radius:999px;padding:3px 9px;font-weight:800">BETA</span></div>
+    <nav class="nav">
+      <a href="#app">変換する</a><a href="#samples">例文</a><a href="#how">使い方</a><a href="#faq">FAQ</a>
+    </nav>
+    <a href="#app" class="btn btn-primary btn-small" style="margin-left:12px;text-decoration:none">今すぐ変換 ✨</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <div>
+      <div class="eyebrow"><i></i> 累計変換 <b id="totalCount" style="margin:0 4px">0</b> 回 &nbsp;•&nbsp; 完全無料・登録不要・コピペOK</div>
+      <h1>普通の文章を、<span>クセ強おじさん構文</span>に一発変換。</h1>
+      <p class="lead">絵文字マシマシ・語尾は「〜だよぉ😘💕」・挨拶も褒めも近況も自動付与。飲み会の誘いも、業務連絡も、告白も、ぜ〜んぶおじさん化。LINEプレビュー・ウザさスコア・履歴・Gemini高精度モード付き。</p>
+      <div class="hero-stats">
+        <div class="stat"><b>6種</b><span>おじさんプリセット</span></div>
+        <div class="stat"><b>120+</b><span>絵文字・顔文字パーツ</span></div>
+        <div class="stat"><b>3案</b><span>同時バリエーション生成</span></div>
+        <div class="stat"><b>∞</b><span>ウザさ無限大 ♾️✨</span></div>
+      </div>
+    </div>
+    <div class="hero-card">
+      <h3>💡 ワンタップでお試し</h3>
+      <p style="font-size:13px;color:var(--muted);margin:0 0 10px">クリックで左の入力欄にセットされるよぉ〜😘💕</p>
+      <div class="sample-chips" id="heroChips"></div>
+      <div style="margin-top:14px;background:#1a1a1e;color:#fff;border-radius:14px;padding:14px;font-size:13.5px;line-height:2" id="heroPreview">ヤッホー😍今日もいい天気だねぇ〜☀️✨おじさん元気だよぉ〜💪😘💕</div>
+    </div>
+  </section>
+
+  <section id="app" class="app">
+    <div class="card">
+      <h2>📝 変換したい文章 <span class="kbd">Ctrl + Enter で変換</span></h2>
+      <p class="desc">敬語でもタメ口でもOK。1行でも長文でも、自動でおじさん化するよぉ〜💌✨</p>
+      <textarea id="input" placeholder="例：お疲れ様。明日の会議は10時からです。資料を送ります。よろしくお願いします。">お疲れ様。明日の会議は10時からです。資料を送りますね。よろしくお願いします。</textarea>
+      <div class="row">
+        <div class="field"><label>相手の呼び方（〇〇ちゃん）</label><input id="targetName" value="ゆみちゃん" maxlength="12"></div>
+        <div class="field"><label>自分の一人称</label><input id="myName" value="おじさん" maxlength="12"></div>
+        <div class="field"><label>時間帯の挨拶</label><select id="timeMode"><option value="auto">自動（今の時間）</option><option value="morning">朝 ☀️</option><option value="noon">昼 🍖</option><option value="night">夜 🌃</option><option value="none">挨拶なし</option></select></div>
+      </div>
+      <div class="toolbar">
+        <button class="btn btn-ghost btn-small" id="btnClear">🗑 クリア</button>
+        <button class="btn btn-ghost btn-small" id="btnRandom">🎲 ランダム例文</button>
+        <button class="btn btn-ghost btn-small" id="btnPaste">📋 貼り付け</button>
+        <span class="count"><span id="charCount">0</span> 文字 ・ <span id="lineCount">0</span> 行</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>⚙️ おじさん設定</h2>
+      <p class="desc">プリセット＋微調整でキモさを精密制御できるよぉ〜😎✨</p>
+      <div class="preset-grid" id="presetGrid"></div>
+      <div class="slider-row"><label>キモさ・ウザさ <em id="kimoVal">Lv.4 かなりキモい😍</em></label><input type="range" id="kimo" min="1" max="5" value="4"></div>
+      <div class="slider-row"><label>絵文字の量 <em id="emojiVal">Lv.4 盛り盛り💕</em></label><input type="range" id="emojiLevel" min="1" max="5" value="4"></div>
+      <div class="slider-row"><label>お誘い・下心レベル <em id="shitagoVal">Lv.2 ほのめかし🍺</em></label><input type="range" id="shitago" min="1" max="5" value="2"></div>
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="tAisatsu" checked> 挨拶を追加</label>
+        <label class="toggle"><input type="checkbox" id="tHome" checked> 褒め言葉</label>
+        <label class="toggle"><input type="checkbox" id="tKinkyo" checked> 近況報告</label>
+        <label class="toggle"><input type="checkbox" id="tO誘い" checked> ご飯のお誘い</label>
+        <label class="toggle"><input type="checkbox" id="tKaomoji" checked> 顔文字 (^^♪</label>
+        <label class="toggle"><input type="checkbox" id="tKatakana" checked> カタカナ化</label>
+        <label class="toggle"><input type="checkbox" id="tBikuri" checked> ❗️⁉️乱用</label>
+        <label class="toggle"><input type="checkbox" id="tShime" checked> 追伸・返信催促</label>
+      </div>
+      <label style="font-size:12px;font-weight:800;color:var(--muted);display:block;margin:12px 0 6px">使う絵文字セット（クリックでON/OFF、多いほどキモいよぉ〜💕）</label>
+      <div class="emoji-pick" id="emojiPick"></div>
+    </div>
+
+    <div class="convert-bar">
+      <button class="btn btn-primary" id="btnConvert" style="font-size:15px;padding:13px 28px">✨ おじさん化する ✨</button>
+      <button class="btn btn-ghost btn-small" id="btn3" style="background:#fff">🎲 3パターン生成</button>
+      <span class="hint">AI高精度モード内蔵だよぉ〜😍✨ そのままボタンでOK🙏💕</span>
+    </div>
+
+    <div class="results" id="results"></div>
+
+    <div class="meter-wrap">
+      <div class="card">
+        <h2>📊 キモさ分析レポート</h2>
+        <p class="desc">絵文字密度・語尾・ウザ要素を自動採点するよぉ〜😎‼️</p>
+        <div id="report"><p style="color:var(--muted);font-size:13px">まだ変換してないよぉ〜🥺早く変換してみてねぇ〜💕</p></div>
+      </div>
+      <div class="phone"><div class="phone-screen">
+        <div class="line-header"><span>＜</span> <span id="lineName">ゆみちゃん 💕</span> <span style="margin-left:auto">🔍 📞 ☰</span></div>
+        <div class="line-body" id="lineBody"><div class="bubble">ここにLINE風プレビューが出るよぉ〜😍💕<div class="bubble-time">既読 12:34</div></div></div>
+        <div style="background:#fff;padding:10px;display:flex;gap:8px;align-items:center"><div style="flex:1;background:#f1f1f1;border-radius:999px;padding:8px 14px;font-size:12px;color:#888">メッセージを入力…</div><div style="font-size:20px">😍</div></div>
+      </div></div>
+    </div>
+
+    <div class="card" style="grid-column:1/-1" id="historyCard">
+      <h2>🕒 変換履歴 <span style="font-size:12px;color:var(--muted)">クリックで復元できるよぉ〜(^^♪</span></h2>
+      <div id="history"><p style="font-size:13px;color:var(--muted)">履歴はまだないよぉ〜🥺</p></div>
+      <div style="margin-top:10px"><button class="btn btn-ghost btn-small" id="btnClearHist">履歴を消す</button></div>
+    </div>
+  </section>
+
+  <section class="section" id="gemini" style="display:none" hidden>
+    <div class="card gemini">
+      <h2>🤖 Gemini AI 高精度モード <span class="badge hot">おすすめ</span> <span class="status-dot" id="geminiDot"></span> <span id="geminiStatus" style="font-size:12px;color:var(--muted)">未接続（ローカル変換で動作中）</span></h2>
+      <p class="desc">APIキーを入れると Google Gemini が文脈を読んで超自然なおじさん構文にするよぉ〜😍💕 キーはブラウザにだけ保存、外に送らないから安心してねぇ〜🙏✨ <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">APIキーの取得はこちら（無料）</a></p>
+      <div class="row">
+        <div class="field" style="flex:2"><label>Gemini APIキー（任意・なくても動くよぉ）</label><input id="geminiKey" type="password" placeholder="AIza...（貼ってねぇ〜💕）" value=""></div>
+        <div class="field"><label>モデル</label><select id="geminiModel"><option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite（速い✨）</option><option value="gemini-3.5-flash">gemini-3.5-flash（バランス🎵）</option><option value="gemini-3-flash-preview">gemini-3-flash-preview（高精度😎）</option></select></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center">
+        <label class="switch"><input type="checkbox" id="geminiUse"> Geminiを使って変換する ✨</label>
+        <button class="btn btn-ghost btn-small" id="btnGeminiTest">接続テスト</button>
+        <button class="btn btn-ghost btn-small" id="btnGeminiSave">キーを保存</button>
+        <span style="font-size:12px;color:var(--muted)">※キーなしでもローカル高精度エンジンで動くよぉ〜💪😘</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="samples">
+    <div class="card">
+      <h2>📚 ネタ例文ギャラリー</h2>
+      <p class="desc">タップで入力欄にセット → そのまま変換ボタンだよぉ〜😘🎵</p>
+      <div class="sample-chips" id="sampleGallery" style="margin-top:8px"></div>
+    </div>
+  </section>
+
+  <section class="section grid3" id="how">
+    <div class="feat"><div class="ico">① ✍️</div><h3>文章を入れる</h3><p>業務連絡・誘い・謝罪、なんでもOK。相手の名前を入れると密着感が爆上がりするよぉ〜😍💕</p></div>
+    <div class="feat"><div class="ico">② 🎚️</div><h3>キモさを盛る</h3><p>プリセット6種＋スライダー3種＋絵文字セットで微調整。王道からパパ活おじさんまで自由自在だよぉ〜🍺✨</p></div>
+    <div class="feat"><div class="ico">③ 📤</div><h3>送って笑いを取る</h3><p>コピー・X投稿・LINE共有・読み上げ対応。ウザさスコアを見て追い込むのもよしだよぉ〜‼️😘</p></div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="card">
+      <h2>❓ よくある質問</h2>
+      <details open><summary>Q. 絵文字が多すぎて読みにくいのですが？</summary><p style="font-size:14px">A. それがおじさん構文の魅力だよぉ〜😍💕 右の「絵文字の量」スライダーを1〜2に下げるとマイルドになるよぉ〜🙏✨</p></details>
+      <details><summary>Q. Geminiを使わないと精度は低いの？</summary><p style="font-size:14px">A. いいえ😎✨ このサイトのローカルエンジンはおじさん構文の定型（挨拶・褒め・近況・お誘い・追伸・語尾伸ばし・カタカナ化・顔文字）を完全再現してるから、オフラインでも十分キモいよぉ〜💪💕 Geminiは文脈の自然さがもう一段上がるよぉ〜🎵</p></details>
+      <details><summary>Q. 実際に送っても大丈夫？</summary><p style="font-size:14px">A. ネタとして仲の良い相手にだけ送ってねぇ〜🥺💦 目上の人や業務相手には絶対ダメだよぉ〜🙏‼️</p></details>
+    </div>
+  </section>
+
+  <footer>オジサン翻訳機 🍺 ネタツールです。本気で送って嫌われても責任は取れないよぉ〜(^_^;)💦 &nbsp;•&nbsp; ローカル処理＋Gemini任意 • データはあなたのブラウザにだけ保存されるよぉ〜🙏✨</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ データ ============ */
+const PRESETS = [
+ {id:'王道', name:'👑 王道おじさん', desc:'THE おじさん構文', kimo:4, emoji:4, shitago:2},
+ {id:'爽やか', name:'☀️ 爽やかおじさん', desc:'朝から元気いっぱい', kimo:2, emoji:3, shitago:1},
+ {id:'上司', name:'💼 セクハラ上司', desc:'飲み会の誘いがち', kimo:5, emoji:3, shitago:4},
+ {id:'パパ活', name:'💰 パパ活おじさん', desc:'おごりたがり', kimo:4, emoji:5, shitago:5},
+ {id:'昭和', name:'📻 昭和おじさん', desc:'顔文字・カタカナ多め', kimo:3, emoji:2, shitago:1},
+ {id:'メンヘラ', name:'🥺 泣き落としおじさん', desc:'返信まだかなぁ…', kimo:5, emoji:4, shitago:3},
+];
+let activePreset = '王道';
+
+const EMOJI_ALL = ["❤️","💕","😍","😘","✨","🌸","☀️","🎵","😅","💦","🙏","💌","‼️","❗","😎","👍","🍺","🍖","⛳","🌃","💪","😊","💖","🥺","🎶","🍣","☕","🌹","💗","😉","🤣","🫶"];
+let emojiEnabled = new Set(EMOJI_ALL);
+
+const SAMPLES = [
+ "お疲れ様。明日の会議は10時からです。資料を送りますね。",
+ "今日はありがとう。楽しかったです。またご飯行きましょう。",
+ "おはよう。体調は大丈夫？無理しないでね。",
+ "この前の写真見たよ。とても綺麗だった。",
+ "了解しました。確認しておきます。",
+ "久しぶりだね。元気にしてた？",
+ "誕生日おめでとう。素敵な一年にしてね。",
+ "ごめんね。返信遅くなった。許してね。",
+ "今日のプレゼン良かったよ。お疲れ様でした。",
+ "週末は空いてる？美味しい店見つけたんだ。"
+];
+
+const GREET = {
+ morning:["おはよう☀️","ヤッホー😍おはよう☀️","おっはよ〜☀️✨"],
+ noon:["やぁ😊こんにちは☀️","ヤッホー😍","お疲れ様〜🍺✨"],
+ night:["こんばんは🌃✨","やぁ🌃今日も一日お疲れ様〜🍺😊","こんばんは😘⭐"],
+};
+const WEATHER = ["今日もいい天気だねぇ〜☀️✨","今日は暑いねぇ〜💦水分とってねぇ〜🙏💕","寒くなってきたけど体調大丈夫〜❓😟💕","桜が綺麗だねぇ〜🌸{t}と見に行きたいなぁ😍💕","雨だけど足元気をつけてねぇ〜☔💦"];
+const COMPLIMENTS = ["今日も{t}は可愛いねぇ〜😍💕","{t}の笑顔を思い出すだけで{me}は元気が出ちゃうよぉ〜💪😍","{t}ってホント気が利くよねぇ〜✨尊敬しちゃうなぁ🙏💕","写真見たけどホント綺麗だったよぉ〜🌸ドキドキしちゃった😍💓","{t}は相変わらずモテるでしょぉ〜😉⁉️{me}は心配だよぉ〜💦💕"];
+const KINKYO = ["{me}は今日ゴルフだったよぉ〜⛳😅スコアはイマイチだったけど楽しかったなぁ🎵","{me}はさっきまで飲んでたよぉ〜🍺😎美味しいお刺身食べたよぉ〜🍣✨","今日は仕事でヘトヘトだよぉ〜💦でも{t}のこと考えたら頑張れちゃう😍💪","さっき愛犬の散歩してたよぉ〜🐶🎵{t}もワンちゃん好きだったよねぇ〜😊💕","健康診断で医者に痩せろって言われちゃったよぉ〜(^_^;)💦なんちゃって🤣"];
+const OFFER = {
+ 1:["落ち着いたらお茶でもどうかなぁ〜☕😊無理しないでねぇ〜💕"],
+ 2:["今度美味しいお肉食べに行こうよぉ〜🍖😍{me}がおごっちゃうよぉ〜💕"],
+ 3:["今度二人でゆっくり飲もうよぉ〜🍺😘いい店知ってるんだぁ〜✨"],
+ 4:["週末空いてる〜❓😍ドライブでも行こうよぉ〜🚗💕二人きりで…なんちゃって😉💦"],
+ 5:["会いたいなぁ〜🥺💕いつ会えるかなぁ〜❓😘ホテル…じゃなくて美味しいお店予約しちゃうよぉ〜😍💌なんちゃって🤣💦"]
+};
+const CLOSINGS = ["また連絡するねぇ〜💌💕","返事待ってるねぇ〜😘❤️無理しないでねぇ〜🙏✨","体に気をつけてねぇ〜💕風邪ひくなよぉ〜😟🙏","おやすみ〜🌃✨いい夢見てねぇ〜😍💤","今日も一日お疲れ様〜🍺✨{t}は偉いねぇ〜👏😊"];
+const KAOMOJI = ["(^^♪","(^_^;)","(≧▽≦)","(*^^*)","(^^ゞ","(^o^)","(￣▽￣)","(´ε｀ )♥","(´∀｀*)","(^з^)-☆"];
+const KATAKANA_MAP = {"ありがとう":"アリガトウ","おはよう":"オハヨウ","こんにちは":"コンニチハ","こんばんは":"コンバンハ","お疲れ様":"オツカレサマ","可愛い":"カワイイ","かわいい":"カワイイ","綺麗":"キレイ","きれい":"キレイ","すごい":"スゴイ","凄い":"スゴイ","よろしく":"ヨロシク","お願い":"オネガイ","頑張":"ガンバ","がんば":"ガンバ","大丈夫":"ダイジョウブ","久しぶり":"ヒサシブリ","誕生日":"タンジョウビ","おめでとう":"オメデトウ","ごめん":"ゴメン","了解":"リョウカイ","確認":"カクニン","最高":"サイコウ","美味しい":"オイシイ","おいしい":"オイシイ","楽しい":"タノシイ","たのしい":"タノシイ","嬉しい":"ウレシイ","うれしい":"ウレシイ","悲しい":"カナシイ","寂しい":"サビシイ","さみしい":"サビシイ"};
+
+/* ============ ユーティリティ ============ */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function pick(arr,rng){return arr[Math.floor(rng()*arr.length)]}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),2200)}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function enabledEmojis(){const a=[...emojiEnabled];return a.length?a:["❤️","😍","✨"]}
+function burst(rng,level){ // level 1-5 → 絵文字をいくつ付けるか
+  const pool=enabledEmojis();const n=Math.max(1,Math.round(level*(0.6+rng()*0.9)));
+  let s="";for(let i=0;i<n;i++)s+=pick(pool,rng);return s;
+}
+function maybeKaomoji(rng,prob,use){if(!use)return"";return rng()<prob?" "+pick(KAOMOJI,rng):""}
+
+/* ============ ローカル高精度エンジン ============ */
+function ojiTransformSentence(s, o, rng){
+  let t=s.trim();if(!t)return"";
+  if(o.useKatakana){for(const k in KATAKANA_MAP){t=t.split(k).join(KATAKANA_MAP[k]);}}
+  // 文末の装飾（精度の肝：語尾パターンを丁寧に）
+  const E=()=>burst(rng,o.emoji);
+  const K=(p)=>maybeKaomoji(rng,p,o.useKaomoji);
+  // 既存の。！？を剥がして付け直す
+  let endPunct="";
+  const m=t.match(/[。！？!?…～〜ー]+$/);if(m){endPunct=m[0];t=t.slice(0,-m[0].length);}
+  // 語尾変換ルール（順序重要）
+  const rules=[
+    [/お願いします$/,"オネガイしますねぇ〜🙏"+E()],
+    [/よろしくお願いします$/,"ヨロシクねぇ〜😘"+E()],
+    [/してください$/,"してねぇ〜😘"+E()],
+    [/しましょう$/,"しましょうねぇ〜😍"+E()+K(.4)],
+    [/ましょう$/,"ましょうねぇ〜😍"+E()+K(.4)],
+    [/ですよね$/,"ですよねぇ〜😊"+E()],
+    [/ますよね$/,"ますよねぇ〜😊"+E()],
+    [/でした$/,"だったよぉ〜😊"+E()+K(.3)],
+    [/ました$/,"ましたよぉ〜😊"+E()+K(.3)],
+    [/です$/,"ですよぉ〜😘"+E()],
+    [/ます$/,"ますよぉ〜💕"+E()],
+    [/だね$/,"だねぇ〜😍"+E()],
+    [/だよ$/,"だよぉ〜😘"+E()],
+    [/かな$/,"かなぁ〜🥺"+E()],
+    [/よね$/,"よねぇ〜😊"+E()],
+    [/よ$/,"よぉ〜😍"+E()],
+    [/ね$/,"ねぇ〜💕"+E()],
+    [/の\?$/,"のぉ〜❓"+E()],
+    [/\?$/,"〜❓"+E()],
+    [/？$/,"〜❓"+E()],
+    [/!$/,"‼️"+E()],[/！$/,"‼️"+E()],
+  ];
+  let hit=false;
+  for(const [re,rep] of rules){if(re.test(t)){t=t.replace(re,rep);hit=true;break;}}
+  if(!hit){
+    if(/[なかたさ行]った$/.test(t)){t=t+"よぉ〜😊"+E()+K(.3);}
+    else if(t.length<=6){t=t+"だよぉ〜😍"+E()+K(.35);}
+    else{t=t+"だよぉ〜😘"+E()+K(.35);}
+    if(endPunct.includes("?")||endPunct.includes("？"))t+="❓"+E();
+  }
+  // ！？乱用
+  if(o.useBikuri&&rng()<0.25+o.kimo*0.08){t+="‼️"+burst(rng,Math.max(1,o.emoji-2));}
+  // 文中の読点をウザく
+  if(rng()<0.2+o.kimo*0.08){t=t.replace(/、/g,"、"+burst(rng,1));}
+  // 「…」と伸ばし
+  if(rng()<0.15+o.kimo*0.05){t=t.replace(/ー/g,"〜");}
+  // カタカナ煽り・小文字化をたまに
+  if(o.useKatakana&&rng()<0.2){t=t.replace(/ない/g,"ナイ").replace(/たい/g,"タイ");}
+  return t;
+}
+
+function localConvert(raw, o, seed){
+  const rng=mulberry32(seed);
+  const target=(o.target||"ちゃん").trim()||"ちゃん";
+  const me=(o.me||"おじさん").trim()||"おじさん";
+  const fill=s=>s.split("{t}").join(target).split("{me}").join(me);
+  let input=(raw||"").trim();
+  if(!input)input="こんにちは。元気にしてる？";
+  // 段落→文に分割
+  const paras=input.split(/\n+/).map(p=>p.trim()).filter(Boolean);
+  let sentences=[];
+  for(const p of paras){
+    const parts=p.split(/(?<=[。！？!?])/g).map(s=>s.trim()).filter(Boolean);
+    if(parts.length) sentences.push(...parts); else sentences.push(p);
+  }
+  let body=sentences.map(s=>{
+    // 句点なし短文にも。を補う前の処理
+    s=s.replace(/。+$/,"");
+    return ojiTransformSentence(s,o,rng);
+  });
+  // 途中に褒め・近況を挿入（キモさで確率変動）
+  const out=[];
+  if(o.useAisatsu&&o.timeMode!=='none'){
+    let key=o.timeMode;if(key==='auto'){const h=new Date().getHours();key=h<10?'morning':h<17?'noon':'night';}
+    const g=fill(pick(GREET[key]||GREET.noon,rng));
+    const w=fill(pick(WEATHER,rng));
+    out.push(`${g}${burst(rng,o.emoji)}${w}${burst(rng,o.emoji)}${maybeKaomoji(rng,.5,o.useKaomoji)}`);
+    if(rng()<.7)out.push(fill(pick(COMPLIMENTS,rng))+maybeKaomoji(rng,.4,o.useKaomoji));
+  } else if(o.useHome&&rng()<.85){out.push(fill(pick(COMPLIMENTS,rng))+maybeKaomoji(rng,.4,o.useKaomoji));}
+  // 本文（合間に近況）
+  body.forEach((s,i)=>{
+    out.push(s);
+    if(o.useKinkyo&&body.length>=1&&i===Math.floor(body.length/2)&&rng()<.3+o.kimo*.12){
+      out.push("ところでねぇ〜😊"+fill(pick(KINKYO,rng))+maybeKaomoji(rng,.4,o.useKaomoji));
+    }
+    if(o.useHome&&body.length>2&&i===0&&rng()<.5){out.push(fill(pick(COMPLIMENTS,rng)));}
+  });
+  // お誘い
+  if(o.useOffer&&rng()<.35+o.shitago*.13){
+    const lvl=Math.min(5,Math.max(1,o.shitago+(rng()<.3?1:0)));
+    out.push(fill(pick(OFFER[lvl],rng))+maybeKaomoji(rng,.45,o.useKaomoji));
+  }
+  // 締め
+  if(o.useShime){out.push(fill(pick(CLOSINGS,rng))+burst(rng,o.emoji)+maybeKaomoji(rng,.5,o.useKaomoji));}
+  // メンヘラ追伸
+  if(activePreset==='メンヘラ'&&rng()<.8){out.push(`あ、返事は急がなくて大丈夫だよぉ〜(^_^;)💦でも待ってるねぇ〜🥺💕${burst(rng,2)}`);}
+  if(activePreset==='昭和'){out.push(`ではでは、失礼しまぁ〜す(^^ゞ ${burst(rng,1)}`);}
+  // 絵文字がゼロ対策
+  let text=out.join("\n");
+  return text;
+}
+
+function kimoScore(text,o){
+  const emojiCount=(text.match(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF\u2B00-\u2BFF❤️💕‼️❗⭐✨]/gu)||[]).length;
+  const kao=(text.match(/\(.*?\^.*?\)|\(´|\(≧|♥|☆/g)||[]).length;
+  const ext=(text.match(/[ぉぇぁ〜ー…⁉️❓💕😍😘]+/g)||[]).length;
+  const score=Math.min(100,Math.round(18+o.kimo*9+o.emoji*6+Math.min(25,emojiCount*0.5)+kao*1.5));
+  return {score,emojiCount,kao};
+}
+
+/* ============ Gemini連携 ============ */
+function buildGeminiPrompt(raw,o){
+  const preset=PRESETS.find(p=>p.id===activePreset);
+  return `あなたは「おじさん構文」のプロ翻訳家です。以下の普通の日本語メッセージを、気持ち悪いおじさん構文（おじさんLINE）に変換してください。\n\n【絶対ルール】\n- 絵文字を大量に使う（量レベル${o.emoji}/5。ハート❤️💕😍😘✨🌸☀️🍺🙏💦‼️などを文末・文中に自然に散りばめる）\n- 語尾は「〜だよぉ😘💕」「〜ねぇ〜✨」「〜かなぁ〜🥺💦」「〜ですよぉ🙏✨」のように伸ばす\n- 一人称は「${o.me}」、相手は「${o.target}」と呼ぶ\n- プリセットは「${preset.name}：${preset.desc}」、キモさ${o.kimo}/5、下心${o.shitago}/5\n- 含める要素：${[o.useAisatsu?'時間帯の挨拶＋天気の話':'',o.useHome?'褒め言葉':'',o.useKinkyo?'おじさんの近況報告':'',o.useOffer?'ご飯・お茶・ドライブのお誘い':'',o.useShime?'返信催促つき締めの言葉':''].filter(Boolean).join('、')}\n- ${o.useKaomoji?'顔文字 (^^♪ (^_^;) (≧▽≦) を使う':'顔文字は使わない'}\n- ${o.useKatakana?'「アリガトウ」「カワイイ」「ヨロシク」など一部カタカナ化する':'カタカナ化は控えめ'}\n- 元の用件（日時・依頼・謝罪など）は絶対に消さない。意味は変えない\n- 出力は変換後の文章のみ。解説・前置きは書かない\n\n【変換する文章】\n${raw}`;
+}
+async function geminiConvert(raw,o){
+  const key=document.getElementById('geminiKey').value.trim()||localStorage.getItem('ojisan_gemini_key')||'';
+  const model=document.getElementById('geminiModel').value;
+  if(!key)throw new Error('APIキーがありません');
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:buildGeminiPrompt(raw,o)}]}],generationConfig:{temperature:0.95,maxOutputTokens:1024}})});
+  if(!res.ok){const t=await res.text();throw new Error('Geminiエラー '+res.status+': '+t.slice(0,200));}
+  const data=await res.json();
+  const text=data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';
+  if(!text.trim())throw new Error('空の応答でした');
+  return text.trim();
+}
+
+/* ============ UI構築 ============ */
+const $=id=>document.getElementById(id);
+function currentOpts(){
+  return {
+    target:$('targetName').value, me:$('myName').value, timeMode:$('timeMode').value,
+    kimo:+$('kimo').value, emoji:+$('emojiLevel').value, shitago:+$('shitago').value,
+    useAisatsu:$('tAisatsu').checked, useHome:$('tHome').checked, useKinkyo:$('tKinkyo').checked,
+    useOffer:$('tO誘い').checked, useKaomoji:$('tKaomoji').checked, useKatakana:$('tKatakana').checked,
+    useBikuri:$('tBikuri').checked, useShime:$('tShime').checked,
+  };
+}
+function renderPresets(){
+  const g=$('presetGrid');g.innerHTML='';
+  PRESETS.forEach(p=>{
+    const d=document.createElement('div');d.className='preset'+(p.id===activePreset?' active':'');
+    d.innerHTML=`<b>${p.name}</b><span>${p.desc} • キモ${p.kimo} 絵${p.emoji}</span>`;
+    d.onclick=()=>{activePreset=p.id;$('kimo').value=p.kimo;$('emojiLevel').value=p.shitago?p.emoji:p.emoji;$('shitago').value=p.shitago;
+      if(p.id==='昭和'){$('tKatakana').checked=true;$('tKaomoji').checked=true;}
+      if(p.id==='爽やか'){$('shitago').value=1;}
+      syncLabels();renderPresets();toast(p.name+' にしたよぉ〜😍💕');};
+    g.appendChild(d);
+  });
+}
+function renderEmojiPick(){
+  const w=$('emojiPick');w.innerHTML='';
+  EMOJI_ALL.forEach(e=>{
+    const b=document.createElement('button');b.textContent=e;b.className=emojiEnabled.has(e)?'on':'';b.type='button';
+    b.onclick=()=>{emojiEnabled.has(e)?emojiEnabled.delete(e):emojiEnabled.add(e);b.classList.toggle('on');};
+    w.appendChild(b);
+  });
+}
+function renderChips(){
+  const hc=$('heroChips'),sg=$('sampleGallery');hc.innerHTML='';sg.innerHTML='';
+  SAMPLES.slice(0,6).forEach(s=>{const c=document.createElement('button');c.className='chip';c.textContent='💬 '+s.slice(0,16)+'…';c.onclick=()=>{$('input').value=s;syncCount();toast('セットしたよぉ〜😘💕');};hc.appendChild(c);});
+  SAMPLES.forEach(s=>{const c=document.createElement('button');c.className='chip';c.textContent=s.slice(0,22);c.onclick=()=>{$('input').value=s;syncCount();document.getElementById('app').scrollIntoView({behavior:'smooth'});};sg.appendChild(c);});
+}
+const KIMO_TXT=['','Lv.1 爽やか☀️','Lv.2 ほのぼの😊','Lv.3 クセ強め😅','Lv.4 かなりキモい😍','Lv.5 限界突破‼️🤣'];
+const EMOJI_TXT=['','Lv.1 ひかえめ🌱','Lv.2 ふつう😊','Lv.3 多め💕','Lv.4 盛り盛り💕','Lv.5 爆盛り❤️😍✨'];
+const SHITAGO_TXT=['','Lv.1 紳士的🙏','Lv.2 ほのめかし🍺','Lv.3 積極的😘','Lv.4 グイグイ💌','Lv.5 危険水域⚠️🤣'];
+function syncLabels(){$('kimoVal').textContent=KIMO_TXT[$('kimo').value];$('emojiVal').textContent=EMOJI_TXT[$('emojiLevel').value];$('shitagoVal').textContent=SHITAGO_TXT[$('shitago').value];}
+function syncCount(){const v=$('input').value;$('charCount').textContent=v.length;$('lineCount').textContent=v?v.split('\n').length:0;}
+
+let history=JSON.parse(localStorage.getItem('ojisan_hist')||'[]');
+function saveHist(input,output){history.unshift({t:Date.now(),input:input.slice(0,60),output});history=history.slice(0,20);localStorage.setItem('ojisan_hist',JSON.stringify(history));renderHist();}
+function renderHist(){
+  const w=$('history');if(!history.length){w.innerHTML='<p style="font-size:13px;color:var(--muted)">履歴はまだないよぉ〜🥺</p>';return;}
+  w.innerHTML='';
+  history.forEach((h,i)=>{
+    const d=document.createElement('div');d.className='history-item';
+    d.innerHTML=`<b>${esc(h.output.slice(0,50))}…</b><small>${new Date(h.t).toLocaleString()} ・元: ${esc(h.input)}…</small>`;
+    d.onclick=()=>{$('input').value=h.input;doConvert(false);};
+    w.appendChild(d);
+  });
+}
+function bumpTotal(){let n=+(localStorage.getItem('ojisan_total')||0)+1;localStorage.setItem('ojisan_total',n);$('totalCount').textContent=n;}
+$('totalCount').textContent=localStorage.getItem('ojisan_total')||0;
+
+function resultCard(title,badge,text,isHot){
+  const id='r'+Math.random().toString(36).slice(2,8);
+  return `<div class="result-card">
+    <div class="result-head">${title} <span class="badge ${isHot?'hot':''}">${badge}</span><span style="margin-left:auto;font-size:11px;color:var(--muted)">${text.length}文字</span></div>
+    <div class="result-body" id="${id}">${esc(text)}</div>
+    <div class="result-actions">
+      <button class="icon-btn" onclick="copyText('${id}')">📋 コピー</button>
+      <button class="icon-btn" onclick="shareX('${id}')">𝕏 投稿</button>
+      <button class="icon-btn" onclick="shareLine('${id}')">💬 LINE</button>
+      <button class="icon-btn" onclick="shareDiscord('${id}')">🎮 Discord</button>
+      <button class="icon-btn" onclick="speak('${id}')">🔊 読む</button>
+    </div></div>`;
+}
+window.copyText=id=>{navigator.clipboard.writeText(document.getElementById(id).innerText).then(()=>toast('コピーしたよぉ〜😍💕'));};
+window.shareX=id=>{const t=encodeURIComponent(document.getElementById(id).innerText.slice(0,130)+'… #オジサン翻訳機');window.open('https://twitter.com/intent/tweet?text='+t,'_blank');};
+window.shareLine=id=>{const t=encodeURIComponent(document.getElementById(id).innerText);window.open('https://line.me/R/share?text='+t,'_blank');};
+window.shareDiscord=id=>{const t=document.getElementById(id).innerText;navigator.clipboard.writeText(t).then(()=>{window.open('https://discord.com/channels/@me','_blank');toast('コピーしたよぉ〜😍Discordに貼ってねぇ〜🎮💕');});};
+window.speak=id=>{const u=new SpeechSynthesisUtterance(document.getElementById(id).innerText);u.lang='ja-JP';u.rate=.95;speechSynthesis.cancel();speechSynthesis.speak(u);toast('読み上げるよぉ〜🎵😘');};
+
+function renderReport(text,o){
+  const {score,emojiCount,kao}=kimoScore(text,o);
+  let rank=score>=85?'限界突破級 ‼️🤣💕':score>=65?'ベテランおじさん 😍🍺':score>=40?'駆け出しおじさん 😊✨':'まだ爽やか ☀️🌱';
+  $('report').innerHTML=`
+    <div style="display:flex;gap:10px;align-items:baseline"><b style="font-size:30px">${score}</b><span style="font-weight:800">/ 100点 ・ ${rank}</span></div>
+    <div class="score-bar"><div class="score-fill" style="width:${score}%"></div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:12.5px;font-weight:700;color:var(--muted)">
+      <span>❤️ 絵文字 ${emojiCount}個</span><span>•</span><span>(^^♪ 顔文字 ${kao}個</span><span>•</span><span>📝 ${text.length}文字</span><span>•</span><span>🎭 ${activePreset}</span>
+    </div>
+    <p style="font-size:13px;color:var(--muted)">${score>=70?'完璧だよぉ〜😍💕このまま送ったらブロックされちゃうかもぉ〜(^_^;)💦':'もっと盛りたいなら絵文字LvとキモさLvを上げてみてねぇ〜💪😘✨'}</p>`;
+  // LINEプレビュー
+  $('lineName').textContent=(o.target||'ゆみちゃん')+' 💕';
+  const parts=text.split('\n').filter(Boolean).slice(0,4);
+  $('lineBody').innerHTML=parts.map((p,i)=>`<div class="bubble">${esc(p)}<div class="bubble-time">${i===parts.length-1?'既読 ':'既読 '}12:3${i}</div></div>`).join('');
+}
+
+async function doConvert(withGemini=true){
+  const raw=$('input').value;const o=currentOpts();
+  const useGem=$('geminiUse').checked;
+  $('btnConvert').textContent='⏳ 変換中…';
+  try{
+    if(withGemini&&useGem){
+      try{
+        const g=await geminiConvert(raw,o);
+        $('results').innerHTML=resultCard('🤖 Gemini仕上げ','AI高精度',g,true)+resultCard('💪 ローカル案A','比較用',localConvert(raw,o,Date.now()%100000),false)+resultCard('💪 ローカル案B','比較用',localConvert(raw,o,(Date.now()%100000)+7),false);
+        renderReport(g,o);saveHist(raw,g);bumpTotal();toast('Geminiで仕上げたよぉ〜😍✨');
+        return;
+      }catch(e){toast('Gemini失敗→ローカルで頑張るよぉ〜🥺💦 '+String(e.message).slice(0,60));}
+    }
+    const s1=Math.floor(Math.random()*1e9),s2=s1+101,s3=s1+202;
+    const a=localConvert(raw,o,s1),b=localConvert(raw,o,s2),c=localConvert(raw,o,s3);
+    $('results').innerHTML=resultCard('👑 本命','おすすめ',a,true)+resultCard('🎲 バリエーションB','別パターン',b,false)+resultCard('🎲 バリエーションC','別パターン',c,false);
+    renderReport(a,o);saveHist(raw,a);bumpTotal();
+  }finally{$('btnConvert').textContent='✨ おじさん化する ✨';}
+}
+
+/* イベント */
+$('btnConvert').onclick=()=>doConvert(true);
+$('btn3').onclick=()=>doConvert(false);
+$('btnClear').onclick=()=>{$('input').value='';syncCount();};
+$('btnRandom').onclick=()=>{$('input').value=SAMPLES[Math.floor(Math.random()*SAMPLES.length)];syncCount();doConvert(false);};
+$('btnPaste').onclick=async()=>{try{$('input').value=await navigator.clipboard.readText();syncCount();toast('貼ったよぉ〜😘💕');}catch{toast('貼り付けできなかったよぉ〜🥺💦');}};
+$('input').addEventListener('input',syncCount);
+['kimo','emojiLevel','shitago'].forEach(id=>$(id).addEventListener('input',syncLabels));
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')doConvert(true);});
+$('btnClearHist').onclick=()=>{history=[];localStorage.removeItem('ojisan_hist');renderHist();};
+$('targetName').addEventListener('input',()=>$('lineName').textContent=($('targetName').value||'ゆみちゃん')+' 💕');
+// Gemini保存・テスト（APIキー埋め込み済み）
+const EMBEDDED_GEMINI_KEY="";
+if(!localStorage.getItem('ojisan_gemini_key')&&EMBEDDED_GEMINI_KEY){localStorage.setItem('ojisan_gemini_key',EMBEDDED_GEMINI_KEY);}
+if(localStorage.getItem('ojisan_gemini_key')){$('geminiKey').value=localStorage.getItem('ojisan_gemini_key');}
+$('geminiUse').checked=!!localStorage.getItem('ojisan_gemini_key');
+function geminiState(ok,msg){$('geminiDot').className='status-dot '+(ok===null?'':ok?'ok':'err');$('geminiStatus').textContent=msg;}
+$('btnGeminiSave').onclick=()=>{localStorage.setItem('ojisan_gemini_key',$('geminiKey').value.trim());geminiState(true,'保存したよぉ〜😍💕 あとはチェックをONにしてねぇ〜✨');toast('保存したよぉ〜🙏✨');};
+$('btnGeminiTest').onclick=async()=>{geminiState(null,'テスト中…⏳');try{const t=await geminiConvert('こんにちは。元気ですか？',currentOpts());geminiState(true,'接続OKだよぉ〜😍💕');toast('成功！ '+t.slice(0,30)+'…');}catch(e){geminiState(false,'失敗: '+String(e.message).slice(0,80));}};
+if(localStorage.getItem('ojisan_gemini_key'))geminiState(true,'埋め込みキーでGeminiモードONだよぉ〜😍✨');
+
+/* 初期化 */
+renderPresets();renderEmojiPick();renderChips();syncLabels();syncCount();renderHist();
+(function(){
+  const h=new Date().getHours();
+  $('heroPreview').textContent=localConvert('今日も一日お疲れ様。とても綺麗だったよ。また会いたいな。',{target:'ゆみちゃん',me:'おじさん',timeMode:'auto',kimo:4,emoji:4,shitago:2,useAisatsu:true,useHome:true,useKinkyo:true,useOffer:true,useKaomoji:true,useKatakana:true,useBikuri:true,useShime:true},42);
+})();
+</script>
+</body>
+</html>
