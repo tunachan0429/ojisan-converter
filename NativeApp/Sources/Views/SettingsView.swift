@@ -23,6 +23,8 @@ struct SettingsView: View {
                     ))
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
+                    Text(settings.apiKey.isEmpty ? "状態：未入力" : "状態：入力済み（\(settings.apiKey.count)文字）")
+                        .font(.footnote).foregroundStyle(.secondary)
                     Picker("ベースモデル", selection: Binding(
                         get: { settings.baseModel },
                         set: { settings.baseModel = $0 }
@@ -41,7 +43,8 @@ struct SettingsView: View {
                                     let r = try await settings.testConnection()
                                     keyMsg = "成功: \(r)"
                                 } catch {
-                                    keyMsg = "失敗: \(String(describing: error).prefix(200))"
+                                    let detail = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                                    keyMsg = "失敗: \(String(detail.prefix(200)))"
                                 }
                             }
                         }
