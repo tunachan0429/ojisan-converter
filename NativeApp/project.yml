@@ -1,0 +1,40 @@
+name: Assistant
+options:
+  bundleIdPrefix: com.my.bannou
+  deploymentTarget:
+    iOS: "17.0"
+configs:
+  Debug: debug
+  Release: release
+targets:
+  Assistant:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: Sources
+        excludes:
+          - "Support/Info.plist"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.my.bannou.native
+        PRODUCT_NAME: Assistant
+        MARKETING_VERSION: "2.2.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.0"
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTS_MACCATALYST: "NO"
+        GENERATE_INFOPLIST_FILE: "NO"
+        INFOPLIST_FILE: Sources/Support/Info.plist
+        ITSAppUsesNonExemptEncryption: "NO"
+        SWIFT_STRICT_CONCURRENCY: minimal
+schemes:
+  Assistant:
+    build:
+      targets:
+        Assistant: all
+    run:
+      config: Debug
+    archive:
+      config: Release

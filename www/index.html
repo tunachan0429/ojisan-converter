@@ -6,596 +6,867 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="オジサン翻訳機">
-<meta name="theme-color" content="#ff4d6d">
-<title>オジサン翻訳機 | おじさん構文変換ツール</title>
-<meta name="description" content="普通の文章を一瞬でおじさん構文に変換。絵文字マシマシ・プリセット6種・LINEプレビュー・Gemini連携対応。">
+<meta name="apple-mobile-web-app-title" content="アシスタント">
+<meta name="theme-color" content="#F2F2F7">
+<title>アシスタント</title>
+<meta name="description" content="検索・会話精度優先の個人用AI助手。チャットは用途別AI＋検索連携、画像認識はVision特化、音声は端末標準。">
 <style>
 :root{
-  --bg:#f6f5f1; --card:#ffffff; --ink:#1a1a1e; --muted:#6b7280; --line:#ece9e2;
-  --accent:#ff4d6d; --accent2:#ff8a3d; --accent-soft:#fff0f2;
-  --green:#0ea371; --yellow:#ffb020; --radius:18px;
-  --shadow:0 8px 30px rgba(0,0,0,.06);
+  --bg:#F2F2F7; --card:#FFFFFF; --ink:#000000; --muted:#8E8E93; --line:rgba(60,60,67,.12);
+  --accent:#007AFF; --accent-soft:#EAF2FF;
+  --green:#34C759; --amber:#FF9500; --red:#FF3B30;
+  --radius:12px; --shadow:none;
+  --tab-h:58px;
+  color-scheme:light dark;
 }
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",Meiryo,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased}
-a{color:inherit}
-.topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
-.topbar-inner{max-width:1160px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px}
-.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:.02em}
-.logo-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:0 6px 16px rgba(255,77,109,.3)}
-.nav{margin-left:auto;display:flex;gap:18px;font-size:14px;color:var(--muted);font-weight:600}
-.nav a{text-decoration:none}.nav a:hover{color:var(--ink)}
-.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:11px 20px;font-weight:800;font-size:14px;cursor:pointer;transition:.18s}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 8px 20px rgba(255,77,109,.28)}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(255,77,109,.34)}
-.btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
-.btn-ghost:hover{border-color:#d8d3c8;background:#fffdf7}
-.btn-small{padding:8px 14px;font-size:13px}
-.wrap{max-width:1160px;margin:0 auto;padding:0 20px}
-.hero{padding:38px 0 18px;display:grid;grid-template-columns:1.2fr .8fr;gap:22px;align-items:start}
-@media(max-width:900px){.hero{grid-template-columns:1fr}.nav{display:none}}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--muted)}
-.eyebrow i{width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;animation:blink 1.6s infinite}
-@keyframes blink{50%{opacity:.35}}
-h1{font-size:clamp(28px,4vw,44px);line-height:1.2;margin:14px 0 10px;letter-spacing:-.02em}
-h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
-.lead{color:var(--muted);font-size:15.5px;margin:0 0 16px}
-.hero-stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;min-width:140px;box-shadow:var(--shadow)}
-.stat b{font-size:20px;display:block}.stat span{font-size:12px;color:var(--muted);font-weight:700}
-.hero-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
-.hero-card h3{margin:0 0 8px;font-size:14px}
-.sample-chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{background:#fbf9f5;border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:13px;cursor:pointer;font-weight:600}
-.chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
-.app{margin:10px 0 26px;display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
-@media(max-width:1000px){.app{grid-template-columns:1fr}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
-.card h2{font-size:16px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
-.card p.desc{font-size:13px;color:var(--muted);margin:0 0 14px}
-textarea{width:100%;min-height:170px;resize:vertical;border:1.5px solid var(--line);border-radius:14px;padding:14px;font-size:15px;line-height:1.8;font-family:inherit;background:#fffdf8;outline:none}
-textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(255,77,109,.1)}
-.row{display:flex;gap:10px;flex-wrap:wrap}
-.field{flex:1;min-width:140px}
-.field label{font-size:12px;font-weight:800;color:var(--muted);display:block;margin:12px 0 6px}
-.field input,.field select{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;font-family:inherit;background:#fff;outline:none}
-.field input:focus,.field select:focus{border-color:var(--accent)}
-.toolbar{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
-.count{margin-left:auto;font-size:12px;color:var(--muted);font-weight:700}
-.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
-.preset{border:1.5px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;background:#fff;transition:.15s}
-.preset:hover{border-color:#f3b3bf}
-.preset.active{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 3px rgba(255,77,109,.12)}
-.preset b{font-size:13.5px;display:block}.preset span{font-size:12px;color:var(--muted)}
-.slider-row{margin:12px 0}
-.slider-row label{display:flex;justify-content:space-between;font-size:13px;font-weight:800}
-.slider-row label em{font-style:normal;background:#f3f0e9;border-radius:999px;padding:1px 10px;font-size:12px}
-input[type=range]{width:100%;accent-color:var(--accent);margin-top:8px}
-.toggles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.toggle{display:flex;align-items:center;gap:8px;background:#fbf9f5;border:1px solid var(--line);border-radius:12px;padding:9px 10px;font-size:13px;font-weight:700;cursor:pointer;user-select:none}
-.toggle input{accent-color:var(--accent);width:16px;height:16px}
-.emoji-pick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.emoji-pick button{border:1px solid var(--line);background:#fff;border-radius:10px;font-size:18px;padding:6px 9px;cursor:pointer}
-.emoji-pick button.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 3px rgba(255,77,109,.1)}
-.convert-bar{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:#1a1a1e;color:#fff;border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
-.convert-bar .hint{font-size:13px;opacity:.75}
-.results{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-@media(max-width:1000px){.results{grid-template-columns:1fr}}
-.result-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
-.result-head{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line);font-size:13px;font-weight:800}
-.badge{font-size:11px;font-weight:800;border-radius:999px;padding:3px 10px;background:#f3f0e9}
-.badge.hot{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
-.result-body{padding:14px;font-size:14.5px;line-height:2;white-space:pre-wrap;background:#fffdf8;min-height:180px}
-.result-actions{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);flex-wrap:wrap;background:#fff}
-.icon-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:800;cursor:pointer}
-.icon-btn:hover{border-color:var(--accent);color:var(--accent)}
-.meter-wrap{grid-column:1/-1;display:grid;grid-template-columns:1fr 360px;gap:14px}
-@media(max-width:1000px){.meter-wrap{grid-template-columns:1fr}}
-.score-bar{height:10px;background:#f0ede6;border-radius:999px;overflow:hidden;margin:8px 0}
-.score-fill{height:100%;background:linear-gradient(90deg,#ffd166,var(--accent2),var(--accent));border-radius:999px;transition:width .6s}
-.phone{background:#0f1419;border-radius:26px;padding:12px;box-shadow:var(--shadow)}
-.phone-screen{background:#8fa9c9;border-radius:18px;overflow:hidden;min-height:320px;display:flex;flex-direction:column}
-.line-header{background:#2f3a45;color:#fff;padding:10px 14px;font-size:13px;font-weight:800;display:flex;gap:8px;align-items:center}
-.line-body{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(#9ab4d3,#8fa9c9)}
-.bubble{background:#fff;border-radius:14px 14px 14px 4px;padding:10px 12px;font-size:13.5px;line-height:1.8;max-width:88%;box-shadow:0 2px 8px rgba(0,0,0,.12);white-space:pre-wrap}
-.bubble-time{font-size:10px;opacity:.6;margin-top:4px}
-.section{margin:26px 0}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-@media(max-width:900px){.grid3{grid-template-columns:1fr}}
-.feat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
-.feat h3{margin:8px 0 6px;font-size:15px}.feat p{margin:0;font-size:13.5px;color:var(--muted)}
-.feat .ico{font-size:26px}
-.gemini{border:2px dashed #e6c2cb;background:#fff7f8}
-.history-item{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;font-size:13px;background:#fffdf8;cursor:pointer}
-.history-item:hover{border-color:var(--accent)}
-.history-item small{color:var(--muted);display:block}
-details{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px 14px;margin-top:10px}
-summary{font-weight:800;cursor:pointer;font-size:14px}
-footer{margin:30px 0 40px;color:var(--muted);font-size:12.5px;text-align:center}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#1a1a1e;color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:.25s;z-index:99;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,system-ui,"Segoe UI",sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;touch-action:manipulation;padding-bottom:calc(var(--tab-h) + env(safe-area-inset-bottom))}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#000000; --card:#1C1C1E; --ink:#FFFFFF; --muted:#98989D; --line:rgba(84,84,88,.6); --accent:#0A84FF; --accent-soft:#10233D; --shadow:none}
+}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(242,242,247,.82);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid var(--line);padding-top:env(safe-area-inset-top)}
+.topbar-inner{max-width:600px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:8px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;letter-spacing:-.2px}
+.ver{font-size:11px;background:rgba(120,120,128,.16);color:var(--muted);border-radius:6px;padding:2px 7px;font-weight:600}
+.status{margin-left:auto;font-size:12px;font-weight:500;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:#C7C7CC;display:inline-block}
+.dot.ok{background:#34C759}.dot.err{background:var(--red)}.dot.local{background:#FF9F0A}
+.wrap{max-width:600px;margin:0 auto;padding:12px 16px 20px}
+.tab-page{display:none}
+.tab-page.active{display:block}
+.card{background:var(--card);border:none;border-radius:var(--radius);box-shadow:none;padding:16px;margin-bottom:12px}
+@media (prefers-color-scheme:light){.card{box-shadow:0 .5px 0 rgba(60,60,67,.08)}}
+.card h2{font-size:17px;margin:0 0 4px;font-weight:700;letter-spacing:-.3px}
+.card p.desc{font-size:13px;color:var(--muted);margin:0 0 12px;line-height:1.5}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:10px;padding:11px 18px;font-weight:600;font-size:16px;cursor:pointer;transition:opacity .15s; font-family:inherit}
+.btn:active{opacity:.6}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:none}
+.btn-primary:disabled{opacity:.4;box-shadow:none}
+.btn-ghost{background:rgba(120,120,128,.14);color:var(--ink)}
+.btn-small{padding:8px 14px;font-size:14px;font-weight:600}
+.btn-block{width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+textarea,input[type=text],input[type=datetime-local],input[type=password],select{width:100%;border:none;border-radius:10px;padding:12px;font-size:16px;font-family:inherit;background:rgba(120,120,128,.12);outline:none;color:var(--ink)}
+textarea:focus,input:focus,select:focus{box-shadow:0 0 0 2px var(--accent)}
+textarea{min-height:96px;resize:vertical;line-height:1.6}
+label.lbl{font-size:13px;font-weight:500;color:var(--muted);display:block;margin:12px 0 6px}
+.mode-grid{display:flex;gap:8px;margin:10px 0;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+@media(max-width:560px){.mode-grid{display:flex}}
+.mode{flex:1 0 auto;border:none;border-radius:10px;padding:10px 12px;background:rgba(120,120,128,.12);cursor:pointer;text-align:center;transition:opacity .15s;min-width:92px}
+.mode:active{opacity:.6}
+.mode b{font-size:14px;display:block;font-weight:600}.mode span{font-size:11px;color:var(--muted)}
+.mode.active{background:var(--accent-soft);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.mode.active b{color:var(--accent)}
+.ai-router{display:flex;gap:8px;align-items:stretch;margin:4px 0 2px}
+.seg{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;background:rgba(120,120,128,.16);border:none;border-radius:9px;padding:2px;gap:0}
+.seg button{border:0;background:transparent;border-radius:7px;padding:7px 4px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;font-family:inherit}
+.seg button.on{background:var(--card);color:var(--ink);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+#speedSel{max-width:120px;flex:none}
+.enginememo{font-size:12px;color:var(--muted);margin:6px 0 0}
+.chat-list{display:flex;flex-direction:column;gap:6px;margin:12px 0;max-height:52vh;overflow-y:auto;padding:2px;-webkit-overflow-scrolling:touch}
+.msg{max-width:82%;padding:9px 13px;border-radius:19px;font-size:16px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.msg.user{background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:5px}
+.msg.ai{background:#E9E9EB;color:#000;align-self:flex-start;border-bottom-left-radius:5px;box-shadow:none;border:none}
+@media (prefers-color-scheme:dark){.msg.ai{background:#262628;color:#fff}}
+.msg.sys{background:rgba(120,120,128,.16);border:none;align-self:center;font-size:12px;color:var(--muted);border-radius:10px}
+.msg small{display:block;font-size:10px;opacity:.6;margin-top:4px}
+.engine{display:inline-block;font-size:11px;font-weight:600;background:rgba(120,120,128,.16);color:var(--muted);border-radius:6px;padding:1px 8px;margin-bottom:6px}
+.engine.vision{background:rgba(52,199,89,.16);color:var(--green)}
+.engine.search{background:rgba(255,149,0,.16);color:var(--amber)}
+.srcrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.src{font-size:13px;font-weight:500;color:var(--accent);background:transparent;border:none;border-radius:0;padding:4px 8px 4px 0;text-decoration:underline;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.followrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.follow{font-size:14px;font-weight:500;background:rgba(120,120,128,.12);border:none;border-radius:16px;padding:7px 13px;cursor:pointer;font-family:inherit;color:var(--accent)}
+.follow:active{opacity:.6}
+.retrybtn{margin-top:8px}
+.imgprev{display:flex;gap:10px;align-items:center;margin-top:8px}
+.imgprev img{width:64px;height:64px;object-fit:cover;border-radius:10px;border:none}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.qchip{background:rgba(120,120,128,.12);border:none;border-radius:16px;padding:7px 13px;font-size:13px;font-weight:500;cursor:pointer;color:var(--ink)}
+.qchip:active{opacity:.6}
+.thread-bar{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.thread-bar select{flex:1}
+.rem-item{border:none;border-radius:10px;padding:12px;margin-top:8px;background:rgba(120,120,128,.1)}
+.rem-item.due{background:rgba(255,59,48,.12)}
+.rem-item.done{opacity:.55}
+.rem-item b{font-size:16px;font-weight:600}
+.rem-item small{color:var(--muted);display:block;font-size:13px}
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+@media(max-width:560px){.tpl-grid{grid-template-columns:1fr 1fr}.ai-router{flex-direction:column}#speedSel{max-width:none}}
+.tpl{border:none;border-radius:10px;padding:12px;background:rgba(120,120,128,.1);cursor:pointer;font-size:14px;font-weight:600}
+.tpl.active{background:var(--accent-soft);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.result{background:rgba(120,120,128,.1);border:none;border-radius:10px;padding:12px;font-size:15px;white-space:pre-wrap;margin-top:10px;line-height:1.6}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(242,242,247,.82);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+@media (prefers-color-scheme:dark){.tabbar{background:rgba(20,20,22,.82)} .topbar{background:rgba(20,20,22,.82)}}
+.tabbar-inner{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);height:var(--tab-h)}
+.tabbtn{border:0;background:none;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:500;color:var(--muted)}
+.tabbtn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.7}
+.tabbtn.active{color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:calc(var(--tab-h) + 18px);transform:translateX(-50%) translateY(10px);background:rgba(30,30,32,.92);color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:.25s;z-index:99;max-width:92vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.kbd{font-size:11px;background:#f0ede6;border-radius:6px;padding:2px 7px;font-weight:800}
-.switch{display:flex;align-items:center;gap:10px;background:#fbf9f5;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:700}
-.switch input{width:18px;height:18px;accent-color:var(--accent)}
-.status-dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:#cbd5e1}
-.status-dot.ok{background:#22c55e}.status-dot.err{background:var(--accent)}
+details{border:none;border-radius:10px;background:rgba(120,120,128,.1);padding:12px 14px;margin-top:8px}
+summary{font-weight:600;cursor:pointer;font-size:15px}
+.kbd{font-size:12px;background:rgba(120,120,128,.16);border-radius:6px;padding:2px 7px;font-weight:600;color:var(--ink)}
+ul.tight{margin:8px 0;padding-left:20px;font-size:14px}
+ul.tight li{margin:4px 0}
+a.link{color:var(--accent);font-weight:500;text-decoration:none}
+.wx{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+.wx div{background:rgba(120,120,128,.1);border:none;border-radius:10px;padding:10px;text-align:center;font-size:12px}
+.wx b{display:block;font-size:17px;font-weight:700}
+
+/* ===== ChatGPT mobile風オーバーライド ===== */
+body{background:#fff}
+.topbar{background:rgba(255,255,255,.86)}
+.topbar-inner.chatnav{max-width:600px;padding:8px 8px;display:flex;align-items:center;gap:4px}
+.navbtn{border:0;background:none;font-family:inherit;font-size:22px;color:var(--ink);width:40px;height:40px;border-radius:50%;cursor:pointer;display:grid;place-items:center}
+.navbtn:active{background:rgba(120,120,128,.14)}
+.modelpill{margin:0 auto;border:0;background:none;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:17px;font-weight:600;color:var(--ink);padding:8px 12px;border-radius:10px;max-width:70%}
+.modelpill:active{background:rgba(120,120,128,.14)}
+.modelpill .caret{font-size:11px;color:var(--muted)}
+.modelpill .dot{width:7px;height:7px}
+.modelpill #apiStatus{font-size:11px;font-weight:500;color:var(--muted)}
+#page-chat .card{background:transparent;box-shadow:none;padding:8px 0}
+#page-chat .card h2,#page-chat .card p.desc,#page-chat .thread-bar{display:none}
+#page-chat .mode-grid{margin:2px 0 8px}
+.chat-list{max-height:62vh;gap:14px}
+.msg{max-width:100%;font-size:16px;line-height:1.65}
+.msg.user{background:rgba(120,120,128,.16);color:var(--ink);align-self:flex-end;border-radius:20px;padding:9px 14px;max-width:88%}
+.msg.ai{background:transparent;color:var(--ink);align-self:stretch;border-radius:0;padding:2px;box-shadow:none}
+@media (prefers-color-scheme:dark){
+  body{background:#000}
+  .topbar{background:rgba(0,0,0,.7)}
+  .msg.user{background:#262628;color:#fff}
+  .msg.ai{color:#fff}
+}
+.hero{padding:28px 4px 8px}
+.hero h1{font-size:27px;font-weight:700;letter-spacing:-.5px;margin:0 0 6px}
+.hero p{font-size:15px;color:var(--muted);margin:0 0 16px}
+.sug-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sug-grid button{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:13px 12px;font-size:14px;font-weight:500;color:var(--ink);cursor:pointer;font-family:inherit;text-align:left;line-height:1.4}
+.sug-grid button:active{background:rgba(120,120,128,.14)}
+.composer{background:var(--card);border-radius:26px;padding:6px;box-shadow:0 1px 8px rgba(0,0,0,.12)}
+@media (prefers-color-scheme:light){.composer{border:.5px solid var(--line)}}
+#chatInput{background:transparent;border:none;box-shadow:none;min-height:48px;max-height:140px;font-size:16px;padding:10px 12px 4px;width:100%}
+#chatInput:focus{box-shadow:none}
+.composer-bar{display:flex;align-items:center;gap:2px;padding:2px 4px 4px}
+.iconbtn{border:0;background:none;font-family:inherit;color:var(--ink);width:38px;height:38px;border-radius:50%;cursor:pointer;display:grid;place-items:center;font-size:22px}
+.iconbtn:active{background:rgba(120,120,128,.16)}
+.iconbtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.sendbtn{margin-left:auto;border:0;cursor:pointer;width:38px;height:38px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center}
+.sendbtn:active{opacity:.6}
+.sendbtn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2.2}
+.composer-note{text-align:center;font-size:11px;color:var(--muted);margin:8px 0 0}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:80}
+.backdrop.show{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:90;background:var(--card);border-radius:16px 16px 0 0;padding:8px 18px calc(20px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .25s ease;max-width:600px;margin:0 auto}
+.sheet.open{transform:none}
+.grabber{width:40px;height:5px;border-radius:3px;background:rgba(120,120,128,.4);margin:6px auto 10px}
+.sheet-title{font-size:17px;font-weight:700;margin:0 0 4px}
+.sheet #speedSel{max-width:none}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:min(84vw,320px);z-index:90;background:var(--card);transform:translateX(-105%);transition:transform .25s ease;display:flex;flex-direction:column;padding:calc(12px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom));gap:10px}
+.drawer.open{transform:none}
+.drawer-head{display:flex;align-items:center;justify-content:space-between}
+.drawer-head b{font-size:17px}
+#drawerList{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:2px;-webkit-overflow-scrolling:touch}
+.ditem{border:0;background:none;font-family:inherit;cursor:pointer;text-align:left;border-radius:10px;padding:10px 12px;color:var(--ink);display:flex;flex-direction:column;gap:1px}
+.ditem:active{background:rgba(120,120,128,.14)}
+.ditem.on{background:rgba(120,120,128,.14)}
+.ditem b{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ditem small{font-size:12px;color:var(--muted)}
+.ditem.danger{color:var(--red);font-size:15px;font-weight:500}
+
+/* ===== モダンポリッシュ（Liquid Glass＋M3 Expressive） ===== */
+.topbar::after{content:'';display:block;height:2px;background:linear-gradient(90deg,transparent,rgba(10,132,255,.45),rgba(162,89,255,.45),transparent)}
+.modelpill{background:rgba(120,120,128,.12);border-radius:999px;box-shadow:inset 0 0 0 .5px var(--line)}
+.msg{animation:rise .28s cubic-bezier(.2,.9,.25,1.05)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.msg{animation:none}.typing span{animation:none}}
+.hero{padding:20px 4px 8px}
+.hero-orb{height:118px;border-radius:24px;margin-bottom:14px;background:radial-gradient(120% 140% at 15% 20%,rgba(10,132,255,.38),transparent 55%),radial-gradient(120% 150% at 85% 30%,rgba(162,89,255,.34),transparent 55%),radial-gradient(140% 160% at 50% 105%,rgba(52,199,89,.22),transparent 60%),rgba(120,120,128,.10)}
+@media (prefers-color-scheme:dark){.hero-orb{background:radial-gradient(120% 140% at 15% 20%,rgba(10,132,255,.5),transparent 55%),radial-gradient(120% 150% at 85% 30%,rgba(191,90,242,.45),transparent 55%),radial-gradient(140% 160% at 50% 105%,rgba(48,209,88,.28),transparent 60%),rgba(28,28,30,.9)}}
+.hero-eyebrow{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.hero h1{font-size:29px;line-height:1.25}
+.hero h1 .grad{background:linear-gradient(92deg,#0A84FF,#A259FF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sug-grid button{display:flex;gap:10px;align-items:center;border-radius:18px;padding:12px}
+.sug-grid button:active{transform:scale(.98)}
+.sug-ico{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex:none}
+.sug-ico svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8}
+.sug-ico.t1{background:rgba(10,132,255,.14);color:#0A84FF}
+.sug-ico.t2{background:rgba(52,199,89,.15);color:#248A3D}
+.sug-ico.t3{background:rgba(255,149,0,.16);color:#C93400}
+.sug-ico.t4{background:rgba(162,89,255,.15);color:#8E4EC6}
+@media (prefers-color-scheme:dark){
+  .sug-ico.t1{background:rgba(10,132,255,.22);color:#64B5FF}
+  .sug-ico.t2{background:rgba(48,209,88,.2);color:#30D158}
+  .sug-ico.t3{background:rgba(255,159,10,.22);color:#FFB340}
+  .sug-ico.t4{background:rgba(191,90,242,.24);color:#D9A6FF}
+}
+#page-chat .composer{position:sticky;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 10px);z-index:20}
+.typing{display:inline-flex;gap:5px;padding:8px 2px}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:tblink 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+@keyframes tblink{0%,60%,100%{opacity:.25;transform:none}30%{opacity:1;transform:translateY(-3px)}}
 </style>
 </head>
 <body>
 
 <header class="topbar">
-  <div class="topbar-inner">
-    <div class="logo"><div class="logo-mark">🍺</div> オジサン翻訳機 <span style="font-size:11px;background:#1a1a1e;color:#fff;border-radius:999px;padding:3px 9px;font-weight:800">BETA</span></div>
-    <nav class="nav">
-      <a href="#app">変換する</a><a href="#samples">例文</a><a href="#how">使い方</a><a href="#faq">FAQ</a>
-    </nav>
-    <a href="#app" class="btn btn-primary btn-small" style="margin-left:12px;text-decoration:none">今すぐ変換 ✨</a>
+  <div class="topbar-inner chatnav">
+    <button class="navbtn" id="btnDrawer" aria-label="履歴">☰</button>
+    <button class="modelpill" id="modelPill" aria-label="モデルと検索の切替"><span id="pillLabel">高精度</span><span class="dot" id="apiDot"></span><span id="apiStatus">未設定</span><span class="caret">▾</span></button>
+    <button class="navbtn" id="btnNewTop" aria-label="新規チャット">＋</button>
   </div>
 </header>
 
 <div class="wrap">
-  <section class="hero">
-    <div>
-      <div class="eyebrow"><i></i> 累計変換 <b id="totalCount" style="margin:0 4px">0</b> 回 &nbsp;•&nbsp; 完全無料・登録不要・コピペOK</div>
-      <h1>普通の文章を、<span>クセ強おじさん構文</span>に一発変換。</h1>
-      <p class="lead">絵文字マシマシ・語尾は「〜だよぉ😘💕」・挨拶も褒めも近況も自動付与。飲み会の誘いも、業務連絡も、告白も、ぜ〜んぶおじさん化。LINEプレビュー・ウザさスコア・履歴・Gemini高精度モード付き。</p>
-      <div class="hero-stats">
-        <div class="stat"><b>6種</b><span>おじさんプリセット</span></div>
-        <div class="stat"><b>120+</b><span>絵文字・顔文字パーツ</span></div>
-        <div class="stat"><b>3案</b><span>同時バリエーション生成</span></div>
-        <div class="stat"><b>∞</b><span>ウザさ無限大 ♾️✨</span></div>
+
+  <!-- ===== チャット（優先画面） ===== -->
+  <section class="tab-page active" id="page-chat">
+    <div class="card">
+      <h2>チャット</h2>
+      <p class="desc">質問と調べものが中心。検索の要否と精度を切り替えられます。</p>
+      <div class="mode-grid" id="modeGrid"></div>
+      <!-- 検索・精度の切替は上部のモデル名から開くパネルに移動 -->
+      <div class="thread-bar" style="margin-top:8px">
+        <select id="threadSel" aria-label="スレッド選択"></select>
+        <button class="btn btn-ghost btn-small" id="btnNewThread">新規</button>
       </div>
+      <div class="chat-list" id="chatList"></div>
+      <div class="quick">
+        <button class="qchip" data-q="3行で要約して：">3行要約</button>
+        <button class="qchip" data-q="丁寧な文章に直して：">丁寧に</button>
+        <button class="qchip" data-q="短く分かりやすくして：">短く</button>
+        <button class="qchip" data-q="3パターン案を出して：">3案出し</button>
+        <button class="qchip" data-q="メリット・デメリットで整理して：">メリデメ</button>
+      </div>
+      <div class="composer">
+        <textarea id="chatInput" rows="1" placeholder="メッセージを入力"></textarea>
+        <input type="file" id="imgInput" accept="image/*" hidden>
+        <div class="imgprev" id="imgPrev" style="display:none">
+          <img id="imgThumb" alt="添付プレビュー">
+          <div style="font-size:12px;color:var(--muted)">画像1枚添付中（送信時のみ使用・保存しません）<br><button class="btn btn-ghost btn-small" id="btnImgClear">外す</button></div>
+        </div>
+        <div class="composer-bar">
+          <button class="iconbtn" id="btnImg" aria-label="画像を添える"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+          <button class="iconbtn" id="btnVoice" aria-label="音声入力"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg></button>
+          <button class="sendbtn" id="btnSend" aria-label="送信"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+        </div>
+      </div>
+      <p class="composer-note">回答は必ず確認してください。</p>
     </div>
-    <div class="hero-card">
-      <h3>💡 ワンタップでお試し</h3>
-      <p style="font-size:13px;color:var(--muted);margin:0 0 10px">クリックで左の入力欄にセットされるよぉ〜😘💕</p>
-      <div class="sample-chips" id="heroChips"></div>
-      <div style="margin-top:14px;background:#1a1a1e;color:#fff;border-radius:14px;padding:14px;font-size:13.5px;line-height:2" id="heroPreview">ヤッホー😍今日もいい天気だねぇ〜☀️✨おじさん元気だよぉ〜💪😘💕</div>
+    <div class="card">
+      <h2>使い方</h2>
+      <ul class="tight">
+        <li><span class="kbd">調べない</span> 相談・作成・連絡。速く枠節約</li>
+        <li><span class="kbd">自動</span> 普段はこれ。必要と判断したら検索</li>
+        <li><span class="kbd">調べる</span> 比較・最新情報は強制検索</li>
+        <li><span class="kbd">画像</span> 写真の文字起こし・図表の読み取りは自動で画像認識に切替</li>
+      </ul>
     </div>
   </section>
 
-  <section id="app" class="app">
+  <!-- ===== リマインド ===== -->
+  <section class="tab-page" id="page-remind">
     <div class="card">
-      <h2>📝 変換したい文章 <span class="kbd">Ctrl + Enter で変換</span></h2>
-      <p class="desc">敬語でもタメ口でもOK。1行でも長文でも、自動でおじさん化するよぉ〜💌✨</p>
-      <textarea id="input" placeholder="例：お疲れ様。明日の会議は10時からです。資料を送ります。よろしくお願いします。">お疲れ様。明日の会議は10時からです。資料を送りますね。よろしくお願いします。</textarea>
+      <h2>リマインダー</h2>
+      <p class="desc">端末内に保存。開いている間は時間になると通知します。</p>
+      <label class="lbl">やること</label>
+      <input type="text" id="remTitle" placeholder="例：部活の道具準備、ゴミ出し、誕プレ買う">
       <div class="row">
-        <div class="field"><label>相手の呼び方（〇〇ちゃん）</label><input id="targetName" value="ゆみちゃん" maxlength="12"></div>
-        <div class="field"><label>自分の一人称</label><input id="myName" value="おじさん" maxlength="12"></div>
-        <div class="field"><label>時間帯の挨拶</label><select id="timeMode"><option value="auto">自動（今の時間）</option><option value="morning">朝 ☀️</option><option value="noon">昼 🍖</option><option value="night">夜 🌃</option><option value="none">挨拶なし</option></select></div>
+        <div style="flex:1;min-width:160px"><label class="lbl">日時</label><input type="datetime-local" id="remDate"></div>
+        <div style="flex:1;min-width:120px"><label class="lbl">繰り返し</label><select id="remRepeat"><option value="none">なし</option><option value="daily">毎日</option><option value="weekly">毎週</option></select></div>
       </div>
-      <div class="toolbar">
-        <button class="btn btn-ghost btn-small" id="btnClear">🗑 クリア</button>
-        <button class="btn btn-ghost btn-small" id="btnRandom">🎲 ランダム例文</button>
-        <button class="btn btn-ghost btn-small" id="btnPaste">📋 貼り付け</button>
-        <span class="count"><span id="charCount">0</span> 文字 ・ <span id="lineCount">0</span> 行</span>
+      <label class="lbl">メモ（任意）</label>
+      <input type="text" id="remMemo" placeholder="例：体育館シューズ忘れずに">
+      <div class="row" style="margin-top:10px">
+        <button class="btn btn-primary" id="btnAddRem" style="flex:1">登録する</button>
+        <button class="btn btn-ghost btn-small" id="btnNotif">通知を許可</button>
       </div>
+      <div id="remList"></div>
     </div>
-
     <div class="card">
-      <h2>⚙️ おじさん設定</h2>
-      <p class="desc">プリセット＋微調整でキモさを精密制御できるよぉ〜😎✨</p>
-      <div class="preset-grid" id="presetGrid"></div>
-      <div class="slider-row"><label>キモさ・ウザさ <em id="kimoVal">Lv.4 かなりキモい😍</em></label><input type="range" id="kimo" min="1" max="5" value="4"></div>
-      <div class="slider-row"><label>絵文字の量 <em id="emojiVal">Lv.4 盛り盛り💕</em></label><input type="range" id="emojiLevel" min="1" max="5" value="4"></div>
-      <div class="slider-row"><label>お誘い・下心レベル <em id="shitagoVal">Lv.2 ほのめかし🍺</em></label><input type="range" id="shitago" min="1" max="5" value="2"></div>
-      <div class="toggles">
-        <label class="toggle"><input type="checkbox" id="tAisatsu" checked> 挨拶を追加</label>
-        <label class="toggle"><input type="checkbox" id="tHome" checked> 褒め言葉</label>
-        <label class="toggle"><input type="checkbox" id="tKinkyo" checked> 近況報告</label>
-        <label class="toggle"><input type="checkbox" id="tO誘い" checked> ご飯のお誘い</label>
-        <label class="toggle"><input type="checkbox" id="tKaomoji" checked> 顔文字 (^^♪</label>
-        <label class="toggle"><input type="checkbox" id="tKatakana" checked> カタカナ化</label>
-        <label class="toggle"><input type="checkbox" id="tBikuri" checked> ❗️⁉️乱用</label>
-        <label class="toggle"><input type="checkbox" id="tShime" checked> 追伸・返信催促</label>
-      </div>
-      <label style="font-size:12px;font-weight:800;color:var(--muted);display:block;margin:12px 0 6px">使う絵文字セット（クリックでON/OFF、多いほどキモいよぉ〜💕）</label>
-      <div class="emoji-pick" id="emojiPick"></div>
-    </div>
-
-    <div class="convert-bar">
-      <button class="btn btn-primary" id="btnConvert" style="font-size:15px;padding:13px 28px">✨ おじさん化する ✨</button>
-      <button class="btn btn-ghost btn-small" id="btn3" style="background:#fff">🎲 3パターン生成</button>
-      <span class="hint">AI高精度モード内蔵だよぉ〜😍✨ そのままボタンでOK🙏💕</span>
-    </div>
-
-    <div class="results" id="results"></div>
-
-    <div class="meter-wrap">
-      <div class="card">
-        <h2>📊 キモさ分析レポート</h2>
-        <p class="desc">絵文字密度・語尾・ウザ要素を自動採点するよぉ〜😎‼️</p>
-        <div id="report"><p style="color:var(--muted);font-size:13px">まだ変換してないよぉ〜🥺早く変換してみてねぇ〜💕</p></div>
-      </div>
-      <div class="phone"><div class="phone-screen">
-        <div class="line-header"><span>＜</span> <span id="lineName">ゆみちゃん 💕</span> <span style="margin-left:auto">🔍 📞 ☰</span></div>
-        <div class="line-body" id="lineBody"><div class="bubble">ここにLINE風プレビューが出るよぉ〜😍💕<div class="bubble-time">既読 12:34</div></div></div>
-        <div style="background:#fff;padding:10px;display:flex;gap:8px;align-items:center"><div style="flex:1;background:#f1f1f1;border-radius:999px;padding:8px 14px;font-size:12px;color:#888">メッセージを入力…</div><div style="font-size:20px">😍</div></div>
-      </div></div>
-    </div>
-
-    <div class="card" style="grid-column:1/-1" id="historyCard">
-      <h2>🕒 変換履歴 <span style="font-size:12px;color:var(--muted)">クリックで復元できるよぉ〜(^^♪</span></h2>
-      <div id="history"><p style="font-size:13px;color:var(--muted)">履歴はまだないよぉ〜🥺</p></div>
-      <div style="margin-top:10px"><button class="btn btn-ghost btn-small" id="btnClearHist">履歴を消す</button></div>
+      <h2>今日の予定を整える</h2>
+      <p class="desc">枠節約のため軽量モデルで整えます。</p>
+      <textarea id="todoInput" placeholder="例：部活 17時、買い物、部屋掃除、動画編集、22時寝る"></textarea>
+      <button class="btn btn-ghost btn-block" id="btnTodoPlan" style="margin-top:8px">計画に整える</button>
+      <div class="result" id="todoOut" style="display:none"></div>
     </div>
   </section>
 
-  <section class="section" id="gemini" style="display:none" hidden>
-    <div class="card gemini">
-      <h2>🤖 Gemini AI 高精度モード <span class="badge hot">おすすめ</span> <span class="status-dot" id="geminiDot"></span> <span id="geminiStatus" style="font-size:12px;color:var(--muted)">未接続（ローカル変換で動作中）</span></h2>
-      <p class="desc">APIキーを入れると Google Gemini が文脈を読んで超自然なおじさん構文にするよぉ〜😍💕 キーはブラウザにだけ保存、外に送らないから安心してねぇ〜🙏✨ <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">APIキーの取得はこちら（無料）</a></p>
+  <!-- ===== 情報収集 ===== -->
+  <section class="tab-page" id="page-info">
+    <div class="card">
+      <h2>天気</h2>
+      <p class="desc">Open-Meteo使用。外出・部活・遊びの判断用。</p>
       <div class="row">
-        <div class="field" style="flex:2"><label>Gemini APIキー（任意・なくても動くよぉ）</label><input id="geminiKey" type="password" placeholder="AIza...（貼ってねぇ〜💕）" value=""></div>
-        <div class="field"><label>モデル</label><select id="geminiModel"><option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite（速い✨）</option><option value="gemini-3.5-flash">gemini-3.5-flash（バランス🎵）</option><option value="gemini-3-flash-preview">gemini-3-flash-preview（高精度😎）</option></select></div>
+        <select id="citySel" style="flex:1">
+          <option value="35.68,139.69">東京</option>
+          <option value="34.69,135.50">大阪</option>
+          <option value="35.18,136.90">名古屋</option>
+          <option value="43.06,141.35">札幌</option>
+          <option value="38.26,140.87">仙台</option>
+          <option value="34.38,132.46">広島</option>
+          <option value="33.59,130.40">福岡</option>
+          <option value="26.21,127.68">那覇</option>
+        </select>
+        <button class="btn btn-ghost btn-small" id="btnWx">取得</button>
       </div>
-      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center">
-        <label class="switch"><input type="checkbox" id="geminiUse"> Geminiを使って変換する ✨</label>
-        <button class="btn btn-ghost btn-small" id="btnGeminiTest">接続テスト</button>
-        <button class="btn btn-ghost btn-small" id="btnGeminiSave">キーを保存</button>
-        <span style="font-size:12px;color:var(--muted)">※キーなしでもローカル高精度エンジンで動くよぉ〜💪😘</span>
+      <div id="wxOut" style="font-size:13px;color:var(--muted);margin-top:8px">まだ取得していません。</div>
+    </div>
+    <div class="card">
+      <h2>Wikipedia</h2>
+      <p class="desc">言葉を入れると概要を1発表示。</p>
+      <div class="row">
+        <input type="text" id="wikiQ" placeholder="例：半導体、源氏物語、ドーパミン" style="flex:1">
+        <button class="btn btn-ghost btn-small" id="btnWiki">調べる</button>
+      </div>
+      <div class="result" id="wikiOut" style="display:none"></div>
+    </div>
+    <div class="card">
+      <h2>Web検索</h2>
+      <p class="desc">深掘りはチャットの「調べる」で直接聞くのが推奨。リンクで開きたい時用。</p>
+      <input type="text" id="webQ" placeholder="例：新型iPhone 比較、おすすめヘッドセット 1万円台">
+      <div class="row" style="margin-top:8px">
+        <button class="btn btn-ghost btn-small" data-search="google">Google</button>
+        <button class="btn btn-ghost btn-small" data-search="duck">DuckDuckGo</button>
+        <button class="btn btn-ghost btn-small" data-search="youtube">YouTube</button>
+        <button class="btn btn-ghost btn-small" data-search="maps">Maps</button>
+        <button class="btn btn-primary btn-small" id="btnSumPrompt">要約プロンプトをコピー</button>
       </div>
     </div>
-  </section>
-
-  <section class="section" id="samples">
     <div class="card">
-      <h2>📚 ネタ例文ギャラリー</h2>
-      <p class="desc">タップで入力欄にセット → そのまま変換ボタンだよぉ〜😘🎵</p>
-      <div class="sample-chips" id="sampleGallery" style="margin-top:8px"></div>
+      <h2>朝のまとめ</h2>
+      <p class="desc">天気＋今日の予定＋ニュースメモを1文にまとめます。</p>
+      <textarea id="briefIn" placeholder="例：今日は部活17時、曇り、気になるニュース：新型スマホ発表"></textarea>
+      <button class="btn btn-ghost btn-block" id="btnBrief" style="margin-top:8px">ブリーフィング文を作る</button>
+      <div class="result" id="briefOut" style="display:none"></div>
     </div>
   </section>
 
-  <section class="section grid3" id="how">
-    <div class="feat"><div class="ico">① ✍️</div><h3>文章を入れる</h3><p>業務連絡・誘い・謝罪、なんでもOK。相手の名前を入れると密着感が爆上がりするよぉ〜😍💕</p></div>
-    <div class="feat"><div class="ico">② 🎚️</div><h3>キモさを盛る</h3><p>プリセット6種＋スライダー3種＋絵文字セットで微調整。王道からパパ活おじさんまで自由自在だよぉ〜🍺✨</p></div>
-    <div class="feat"><div class="ico">③ 📤</div><h3>送って笑いを取る</h3><p>コピー・X投稿・LINE共有・読み上げ対応。ウザさスコアを見て追い込むのもよしだよぉ〜‼️😘</p></div>
-  </section>
-
-  <section class="section" id="faq">
+  <!-- ===== 連絡・生成 ===== -->
+  <section class="tab-page" id="page-make">
     <div class="card">
-      <h2>❓ よくある質問</h2>
-      <details open><summary>Q. 絵文字が多すぎて読みにくいのですが？</summary><p style="font-size:14px">A. それがおじさん構文の魅力だよぉ〜😍💕 右の「絵文字の量」スライダーを1〜2に下げるとマイルドになるよぉ〜🙏✨</p></details>
-      <details><summary>Q. Geminiを使わないと精度は低いの？</summary><p style="font-size:14px">A. いいえ😎✨ このサイトのローカルエンジンはおじさん構文の定型（挨拶・褒め・近況・お誘い・追伸・語尾伸ばし・カタカナ化・顔文字）を完全再現してるから、オフラインでも十分キモいよぉ〜💪💕 Geminiは文脈の自然さがもう一段上がるよぉ〜🎵</p></details>
-      <details><summary>Q. 実際に送っても大丈夫？</summary><p style="font-size:14px">A. ネタとして仲の良い相手にだけ送ってねぇ〜🥺💦 目上の人や業務相手には絶対ダメだよぉ〜🙏‼️</p></details>
+      <h2>連絡文を作成</h2>
+      <p class="desc">相手と用件を入力するだけ。精度が必要な時はチャットの高精度へ。</p>
+      <div class="tpl-grid" id="tplGrid"></div>
+      <div class="row">
+        <div style="flex:1;min-width:130px"><label class="lbl">相手</label><input type="text" id="ctTo" value="顧問の先生"></div>
+        <div style="flex:1;min-width:130px"><label class="lbl">自分</label><input type="text" id="ctFrom" value="1年"></div>
+      </div>
+      <label class="lbl">用件</label>
+      <input type="text" id="ctBody" placeholder="例：明日、発熱のため部活を休みます">
+      <label class="lbl">トーン</label>
+      <select id="ctTone"><option value="丁寧">丁寧・敬語</option><option value="カジュアル丁寧">カジュアル丁寧（先輩・友達）</option><option value="短め">短め・LINE用</option></select>
+      <button class="btn btn-primary btn-block" id="btnMakeContact" style="margin-top:10px">連絡文を作る</button>
+      <div class="result" id="contactOut" style="display:none"></div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn btn-ghost btn-small" id="btnCopyContact">コピー</button>
+        <button class="btn btn-ghost btn-small" id="btnLineContact">LINEで送る</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>アイデア・投稿文</h2>
+      <p class="desc">企画・ネタ出し・SNS文・名前決めに。</p>
+      <input type="text" id="ideaIn" placeholder="例：文化祭の出し物、ゲーム実況のタイトル">
+      <div class="row" style="margin-top:8px">
+        <button class="btn btn-ghost btn-small" id="btnIdea10">10案出す</button>
+        <button class="btn btn-ghost btn-small" id="btnSns">SNS文にする</button>
+      </div>
+      <div class="result" id="ideaOut" style="display:none"></div>
     </div>
   </section>
 
-  <footer>オジサン翻訳機 🍺 ネタツールです。本気で送って嫌われても責任は取れないよぉ〜(^_^;)💦 &nbsp;•&nbsp; ローカル処理＋Gemini任意 • データはあなたのブラウザにだけ保存されるよぉ〜🙏✨</footer>
+  <!-- ===== 設定 ===== -->
+  <section class="tab-page" id="page-set">
+    <div class="card">
+      <h2>API設定</h2>
+      <p class="desc">キーは端末内のみに保存されます。<a class="link" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">取得はこちら</a></p>
+      <label class="lbl">APIキー（AIza…）</label>
+      <input type="password" id="apiKey" placeholder="貼り付け">
+      <div class="row">
+        <div style="flex:1;min-width:150px"><label class="lbl">ベースモデル（使わない時は自動）</label><select id="apiModel"><option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite（速い・無料枠大）</option><option value="gemini-2.0-flash">gemini-2.0-flash（バランス）</option><option value="gemini-1.5-flash">gemini-1.5-flash（互換）</option></select></div>
+        <div style="flex:1;min-width:130px"><label class="lbl">あなたの呼び方</label><input type="text" id="myCall" value=""></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn btn-primary btn-small" id="btnSaveKey">保存</button>
+        <button class="btn btn-ghost btn-small" id="btnTestKey">接続テスト</button>
+        <button class="btn btn-ghost btn-small" id="btnDelKey">削除</button>
+      </div>
+      <p id="keyMsg" style="font-size:12.5px;color:var(--muted)"></p>
+      <details><summary>用途別AIの割当（v2）</summary>
+        <ul class="tight">
+          <li>通常チャット速い：flash-lite・低温度</li>
+          <li>通常チャット高精度：flash・中温度</li>
+          <li>調べる／自動検索：flash＋google_search・温度1.0・出典抽出</li>
+          <li>画像認識：flash Vision固定・低温度・画像トークン別枠</li>
+          <li>連絡・生成・ToDo・要約：lite固定で枠節約</li>
+          <li>音声入出力：端末のWeb Speech（無料・キー不要）</li>
+          <li>天気・Wikipedia：非AIの無料API直叩き</li>
+        </ul>
+      </details>
+    </div>
+    <div class="card">
+      <h2>データ管理</h2>
+      <p class="desc">チャット・リマインダーは全部このiPhone内に保存。画像バイナリは保存しません。</p>
+      <div class="row">
+        <button class="btn btn-ghost btn-small" id="btnExport">バックアップ書き出し</button>
+        <button class="btn btn-ghost btn-small" id="btnWipe">全部消す</button>
+      </div>
+      <details><summary>IPA・7日署名について</summary><p style="font-size:13px">GitHub Actionsで作った署名なしIPAをSideloadly / AltStoreで入れます。無料Apple IDは7日で期限切れ→入れ直し。データはバックアップ書き出しで退避できます。</p></details>
+      <details><summary>オフラインで何ができる？</summary><p style="font-size:13px">連絡テンプレ・アイデア雛形・ToDo整理・リマインダー登録はキーなしで動作。チャット高精度・検索・画像認識はネット＋キーが必要です。失敗時は再試行ボタンが出ます。</p></details>
+    </div>
+  </section>
+
 </div>
+
+<div class="backdrop" id="sheetBack"></div>
+<div class="sheet" id="modelSheet" role="dialog" aria-label="モデルと検索">
+  <div class="grabber"></div>
+  <p class="sheet-title">モデルと検索</p>
+  <label class="lbl">検索</label>
+  <div class="seg" id="searchSeg" aria-label="検索モード">
+    <button data-s="off">しない</button>
+    <button data-s="auto" class="on">自動</button>
+    <button data-s="on">する</button>
+  </div>
+  <label class="lbl">応答</label>
+  <select id="speedSel" aria-label="精度">
+    <option value="fast">速い</option>
+    <option value="high" selected>高精度</option>
+  </select>
+  <p class="enginememo" id="engineMemo"></p>
+  <div style="margin-top:12px"><button class="btn btn-primary btn-block" id="btnSheetDone">完了</button></div>
+</div>
+<div class="backdrop" id="drawerBack"></div>
+<aside class="drawer" id="drawer" aria-label="履歴">
+  <div class="drawer-head"><b>履歴</b><button class="iconbtn" id="btnDrawerClose" aria-label="閉じる">×</button></div>
+  <button class="btn btn-ghost btn-block" id="btnDrawerNew">新規チャット</button>
+  <div id="drawerList"></div>
+  <button class="ditem danger" id="btnClearChat">現在のチャットを消去</button>
+</aside>
+
+<nav class="tabbar"><div class="tabbar-inner">
+  <button class="tabbtn active" data-tab="chat"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z"/></svg>チャット</button>
+  <button class="tabbtn" data-tab="remind"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>リマインド</button>
+  <button class="tabbtn" data-tab="info"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5c-.8-1-2-1.5-3.5-1.5-2.2 0-3.7 1.2-3.7 3 0 3.5 7.4 2 7.4 5.5 0 1.8-1.6 3-3.7 3-1.5 0-2.8-.6-3.6-1.6"/></svg>情報</button>
+  <button class="tabbtn" data-tab="make"><svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/><path d="M13.5 6.5l3 3"/></svg>作成</button>
+  <button class="tabbtn" data-tab="set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.2 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></svg>設定</button>
+</div></nav>
 
 <div class="toast" id="toast"></div>
 
 <script>
-/* ============ データ ============ */
-const PRESETS = [
- {id:'王道', name:'👑 王道おじさん', desc:'THE おじさん構文', kimo:4, emoji:4, shitago:2},
- {id:'爽やか', name:'☀️ 爽やかおじさん', desc:'朝から元気いっぱい', kimo:2, emoji:3, shitago:1},
- {id:'上司', name:'💼 セクハラ上司', desc:'飲み会の誘いがち', kimo:5, emoji:3, shitago:4},
- {id:'パパ活', name:'💰 パパ活おじさん', desc:'おごりたがり', kimo:4, emoji:5, shitago:5},
- {id:'昭和', name:'📻 昭和おじさん', desc:'顔文字・カタカナ多め', kimo:3, emoji:2, shitago:1},
- {id:'メンヘラ', name:'🥺 泣き落としおじさん', desc:'返信まだかなぁ…', kimo:5, emoji:4, shitago:3},
-];
-let activePreset = '王道';
-
-const EMOJI_ALL = ["❤️","💕","😍","😘","✨","🌸","☀️","🎵","😅","💦","🙏","💌","‼️","❗","😎","👍","🍺","🍖","⛳","🌃","💪","😊","💖","🥺","🎶","🍣","☕","🌹","💗","😉","🤣","🫶"];
-let emojiEnabled = new Set(EMOJI_ALL);
-
-const SAMPLES = [
- "お疲れ様。明日の会議は10時からです。資料を送りますね。",
- "今日はありがとう。楽しかったです。またご飯行きましょう。",
- "おはよう。体調は大丈夫？無理しないでね。",
- "この前の写真見たよ。とても綺麗だった。",
- "了解しました。確認しておきます。",
- "久しぶりだね。元気にしてた？",
- "誕生日おめでとう。素敵な一年にしてね。",
- "ごめんね。返信遅くなった。許してね。",
- "今日のプレゼン良かったよ。お疲れ様でした。",
- "週末は空いてる？美味しい店見つけたんだ。"
-];
-
-const GREET = {
- morning:["おはよう☀️","ヤッホー😍おはよう☀️","おっはよ〜☀️✨"],
- noon:["やぁ😊こんにちは☀️","ヤッホー😍","お疲れ様〜🍺✨"],
- night:["こんばんは🌃✨","やぁ🌃今日も一日お疲れ様〜🍺😊","こんばんは😘⭐"],
-};
-const WEATHER = ["今日もいい天気だねぇ〜☀️✨","今日は暑いねぇ〜💦水分とってねぇ〜🙏💕","寒くなってきたけど体調大丈夫〜❓😟💕","桜が綺麗だねぇ〜🌸{t}と見に行きたいなぁ😍💕","雨だけど足元気をつけてねぇ〜☔💦"];
-const COMPLIMENTS = ["今日も{t}は可愛いねぇ〜😍💕","{t}の笑顔を思い出すだけで{me}は元気が出ちゃうよぉ〜💪😍","{t}ってホント気が利くよねぇ〜✨尊敬しちゃうなぁ🙏💕","写真見たけどホント綺麗だったよぉ〜🌸ドキドキしちゃった😍💓","{t}は相変わらずモテるでしょぉ〜😉⁉️{me}は心配だよぉ〜💦💕"];
-const KINKYO = ["{me}は今日ゴルフだったよぉ〜⛳😅スコアはイマイチだったけど楽しかったなぁ🎵","{me}はさっきまで飲んでたよぉ〜🍺😎美味しいお刺身食べたよぉ〜🍣✨","今日は仕事でヘトヘトだよぉ〜💦でも{t}のこと考えたら頑張れちゃう😍💪","さっき愛犬の散歩してたよぉ〜🐶🎵{t}もワンちゃん好きだったよねぇ〜😊💕","健康診断で医者に痩せろって言われちゃったよぉ〜(^_^;)💦なんちゃって🤣"];
-const OFFER = {
- 1:["落ち着いたらお茶でもどうかなぁ〜☕😊無理しないでねぇ〜💕"],
- 2:["今度美味しいお肉食べに行こうよぉ〜🍖😍{me}がおごっちゃうよぉ〜💕"],
- 3:["今度二人でゆっくり飲もうよぉ〜🍺😘いい店知ってるんだぁ〜✨"],
- 4:["週末空いてる〜❓😍ドライブでも行こうよぉ〜🚗💕二人きりで…なんちゃって😉💦"],
- 5:["会いたいなぁ〜🥺💕いつ会えるかなぁ〜❓😘ホテル…じゃなくて美味しいお店予約しちゃうよぉ〜😍💌なんちゃって🤣💦"]
-};
-const CLOSINGS = ["また連絡するねぇ〜💌💕","返事待ってるねぇ〜😘❤️無理しないでねぇ〜🙏✨","体に気をつけてねぇ〜💕風邪ひくなよぉ〜😟🙏","おやすみ〜🌃✨いい夢見てねぇ〜😍💤","今日も一日お疲れ様〜🍺✨{t}は偉いねぇ〜👏😊"];
-const KAOMOJI = ["(^^♪","(^_^;)","(≧▽≦)","(*^^*)","(^^ゞ","(^o^)","(￣▽￣)","(´ε｀ )♥","(´∀｀*)","(^з^)-☆"];
-const KATAKANA_MAP = {"ありがとう":"アリガトウ","おはよう":"オハヨウ","こんにちは":"コンニチハ","こんばんは":"コンバンハ","お疲れ様":"オツカレサマ","可愛い":"カワイイ","かわいい":"カワイイ","綺麗":"キレイ","きれい":"キレイ","すごい":"スゴイ","凄い":"スゴイ","よろしく":"ヨロシク","お願い":"オネガイ","頑張":"ガンバ","がんば":"ガンバ","大丈夫":"ダイジョウブ","久しぶり":"ヒサシブリ","誕生日":"タンジョウビ","おめでとう":"オメデトウ","ごめん":"ゴメン","了解":"リョウカイ","確認":"カクニン","最高":"サイコウ","美味しい":"オイシイ","おいしい":"オイシイ","楽しい":"タノシイ","たのしい":"タノシイ","嬉しい":"ウレシイ","うれしい":"ウレシイ","悲しい":"カナシイ","寂しい":"サビシイ","さみしい":"サビシイ"};
-
-/* ============ ユーティリティ ============ */
-function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-function pick(arr,rng){return arr[Math.floor(rng()*arr.length)]}
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),2200)}
-function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
-function enabledEmojis(){const a=[...emojiEnabled];return a.length?a:["❤️","😍","✨"]}
-function burst(rng,level){ // level 1-5 → 絵文字をいくつ付けるか
-  const pool=enabledEmojis();const n=Math.max(1,Math.round(level*(0.6+rng()*0.9)));
-  let s="";for(let i=0;i<n;i++)s+=pick(pool,rng);return s;
-}
-function maybeKaomoji(rng,prob,use){if(!use)return"";return rng()<prob?" "+pick(KAOMOJI,rng):""}
-
-/* ============ ローカル高精度エンジン ============ */
-function ojiTransformSentence(s, o, rng){
-  let t=s.trim();if(!t)return"";
-  if(o.useKatakana){for(const k in KATAKANA_MAP){t=t.split(k).join(KATAKANA_MAP[k]);}}
-  // 文末の装飾（精度の肝：語尾パターンを丁寧に）
-  const E=()=>burst(rng,o.emoji);
-  const K=(p)=>maybeKaomoji(rng,p,o.useKaomoji);
-  // 既存の。！？を剥がして付け直す
-  let endPunct="";
-  const m=t.match(/[。！？!?…～〜ー]+$/);if(m){endPunct=m[0];t=t.slice(0,-m[0].length);}
-  // 語尾変換ルール（順序重要）
-  const rules=[
-    [/お願いします$/,"オネガイしますねぇ〜🙏"+E()],
-    [/よろしくお願いします$/,"ヨロシクねぇ〜😘"+E()],
-    [/してください$/,"してねぇ〜😘"+E()],
-    [/しましょう$/,"しましょうねぇ〜😍"+E()+K(.4)],
-    [/ましょう$/,"ましょうねぇ〜😍"+E()+K(.4)],
-    [/ですよね$/,"ですよねぇ〜😊"+E()],
-    [/ますよね$/,"ますよねぇ〜😊"+E()],
-    [/でした$/,"だったよぉ〜😊"+E()+K(.3)],
-    [/ました$/,"ましたよぉ〜😊"+E()+K(.3)],
-    [/です$/,"ですよぉ〜😘"+E()],
-    [/ます$/,"ますよぉ〜💕"+E()],
-    [/だね$/,"だねぇ〜😍"+E()],
-    [/だよ$/,"だよぉ〜😘"+E()],
-    [/かな$/,"かなぁ〜🥺"+E()],
-    [/よね$/,"よねぇ〜😊"+E()],
-    [/よ$/,"よぉ〜😍"+E()],
-    [/ね$/,"ねぇ〜💕"+E()],
-    [/の\?$/,"のぉ〜❓"+E()],
-    [/\?$/,"〜❓"+E()],
-    [/？$/,"〜❓"+E()],
-    [/!$/,"‼️"+E()],[/！$/,"‼️"+E()],
-  ];
-  let hit=false;
-  for(const [re,rep] of rules){if(re.test(t)){t=t.replace(re,rep);hit=true;break;}}
-  if(!hit){
-    if(/[なかたさ行]った$/.test(t)){t=t+"よぉ〜😊"+E()+K(.3);}
-    else if(t.length<=6){t=t+"だよぉ〜😍"+E()+K(.35);}
-    else{t=t+"だよぉ〜😘"+E()+K(.35);}
-    if(endPunct.includes("?")||endPunct.includes("？"))t+="❓"+E();
-  }
-  // ！？乱用
-  if(o.useBikuri&&rng()<0.25+o.kimo*0.08){t+="‼️"+burst(rng,Math.max(1,o.emoji-2));}
-  // 文中の読点をウザく
-  if(rng()<0.2+o.kimo*0.08){t=t.replace(/、/g,"、"+burst(rng,1));}
-  // 「…」と伸ばし
-  if(rng()<0.15+o.kimo*0.05){t=t.replace(/ー/g,"〜");}
-  // カタカナ煽り・小文字化をたまに
-  if(o.useKatakana&&rng()<0.2){t=t.replace(/ない/g,"ナイ").replace(/たい/g,"タイ");}
-  return t;
-}
-
-function localConvert(raw, o, seed){
-  const rng=mulberry32(seed);
-  const target=(o.target||"ちゃん").trim()||"ちゃん";
-  const me=(o.me||"おじさん").trim()||"おじさん";
-  const fill=s=>s.split("{t}").join(target).split("{me}").join(me);
-  let input=(raw||"").trim();
-  if(!input)input="こんにちは。元気にしてる？";
-  // 段落→文に分割
-  const paras=input.split(/\n+/).map(p=>p.trim()).filter(Boolean);
-  let sentences=[];
-  for(const p of paras){
-    const parts=p.split(/(?<=[。！？!?])/g).map(s=>s.trim()).filter(Boolean);
-    if(parts.length) sentences.push(...parts); else sentences.push(p);
-  }
-  let body=sentences.map(s=>{
-    // 句点なし短文にも。を補う前の処理
-    s=s.replace(/。+$/,"");
-    return ojiTransformSentence(s,o,rng);
-  });
-  // 途中に褒め・近況を挿入（キモさで確率変動）
-  const out=[];
-  if(o.useAisatsu&&o.timeMode!=='none'){
-    let key=o.timeMode;if(key==='auto'){const h=new Date().getHours();key=h<10?'morning':h<17?'noon':'night';}
-    const g=fill(pick(GREET[key]||GREET.noon,rng));
-    const w=fill(pick(WEATHER,rng));
-    out.push(`${g}${burst(rng,o.emoji)}${w}${burst(rng,o.emoji)}${maybeKaomoji(rng,.5,o.useKaomoji)}`);
-    if(rng()<.7)out.push(fill(pick(COMPLIMENTS,rng))+maybeKaomoji(rng,.4,o.useKaomoji));
-  } else if(o.useHome&&rng()<.85){out.push(fill(pick(COMPLIMENTS,rng))+maybeKaomoji(rng,.4,o.useKaomoji));}
-  // 本文（合間に近況）
-  body.forEach((s,i)=>{
-    out.push(s);
-    if(o.useKinkyo&&body.length>=1&&i===Math.floor(body.length/2)&&rng()<.3+o.kimo*.12){
-      out.push("ところでねぇ〜😊"+fill(pick(KINKYO,rng))+maybeKaomoji(rng,.4,o.useKaomoji));
-    }
-    if(o.useHome&&body.length>2&&i===0&&rng()<.5){out.push(fill(pick(COMPLIMENTS,rng)));}
-  });
-  // お誘い
-  if(o.useOffer&&rng()<.35+o.shitago*.13){
-    const lvl=Math.min(5,Math.max(1,o.shitago+(rng()<.3?1:0)));
-    out.push(fill(pick(OFFER[lvl],rng))+maybeKaomoji(rng,.45,o.useKaomoji));
-  }
-  // 締め
-  if(o.useShime){out.push(fill(pick(CLOSINGS,rng))+burst(rng,o.emoji)+maybeKaomoji(rng,.5,o.useKaomoji));}
-  // メンヘラ追伸
-  if(activePreset==='メンヘラ'&&rng()<.8){out.push(`あ、返事は急がなくて大丈夫だよぉ〜(^_^;)💦でも待ってるねぇ〜🥺💕${burst(rng,2)}`);}
-  if(activePreset==='昭和'){out.push(`ではでは、失礼しまぁ〜す(^^ゞ ${burst(rng,1)}`);}
-  // 絵文字がゼロ対策
-  let text=out.join("\n");
-  return text;
-}
-
-function kimoScore(text,o){
-  const emojiCount=(text.match(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF\u2B00-\u2BFF❤️💕‼️❗⭐✨]/gu)||[]).length;
-  const kao=(text.match(/\(.*?\^.*?\)|\(´|\(≧|♥|☆/g)||[]).length;
-  const ext=(text.match(/[ぉぇぁ〜ー…⁉️❓💕😍😘]+/g)||[]).length;
-  const score=Math.min(100,Math.round(18+o.kimo*9+o.emoji*6+Math.min(25,emojiCount*0.5)+kao*1.5));
-  return {score,emojiCount,kao};
-}
-
-/* ============ Gemini連携 ============ */
-function buildGeminiPrompt(raw,o){
-  const preset=PRESETS.find(p=>p.id===activePreset);
-  return `あなたは「おじさん構文」のプロ翻訳家です。以下の普通の日本語メッセージを、気持ち悪いおじさん構文（おじさんLINE）に変換してください。\n\n【絶対ルール】\n- 絵文字を大量に使う（量レベル${o.emoji}/5。ハート❤️💕😍😘✨🌸☀️🍺🙏💦‼️などを文末・文中に自然に散りばめる）\n- 語尾は「〜だよぉ😘💕」「〜ねぇ〜✨」「〜かなぁ〜🥺💦」「〜ですよぉ🙏✨」のように伸ばす\n- 一人称は「${o.me}」、相手は「${o.target}」と呼ぶ\n- プリセットは「${preset.name}：${preset.desc}」、キモさ${o.kimo}/5、下心${o.shitago}/5\n- 含める要素：${[o.useAisatsu?'時間帯の挨拶＋天気の話':'',o.useHome?'褒め言葉':'',o.useKinkyo?'おじさんの近況報告':'',o.useOffer?'ご飯・お茶・ドライブのお誘い':'',o.useShime?'返信催促つき締めの言葉':''].filter(Boolean).join('、')}\n- ${o.useKaomoji?'顔文字 (^^♪ (^_^;) (≧▽≦) を使う':'顔文字は使わない'}\n- ${o.useKatakana?'「アリガトウ」「カワイイ」「ヨロシク」など一部カタカナ化する':'カタカナ化は控えめ'}\n- 元の用件（日時・依頼・謝罪など）は絶対に消さない。意味は変えない\n- 出力は変換後の文章のみ。解説・前置きは書かない\n\n【変換する文章】\n${raw}`;
-}
-async function geminiConvert(raw,o){
-  const key=document.getElementById('geminiKey').value.trim()||localStorage.getItem('ojisan_gemini_key')||'';
-  const model=document.getElementById('geminiModel').value;
-  if(!key)throw new Error('APIキーがありません');
-  const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
-  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:buildGeminiPrompt(raw,o)}]}],generationConfig:{temperature:0.95,maxOutputTokens:1024}})});
-  if(!res.ok){const t=await res.text();throw new Error('Geminiエラー '+res.status+': '+t.slice(0,200));}
-  const data=await res.json();
-  const text=data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';
-  if(!text.trim())throw new Error('空の応答でした');
-  return text.trim();
-}
-
-/* ============ UI構築 ============ */
+/* ===== 共通 ===== */
 const $=id=>document.getElementById(id);
-function currentOpts(){
-  return {
-    target:$('targetName').value, me:$('myName').value, timeMode:$('timeMode').value,
-    kimo:+$('kimo').value, emoji:+$('emojiLevel').value, shitago:+$('shitago').value,
-    useAisatsu:$('tAisatsu').checked, useHome:$('tHome').checked, useKinkyo:$('tKinkyo').checked,
-    useOffer:$('tO誘い').checked, useKaomoji:$('tKaomoji').checked, useKatakana:$('tKatakana').checked,
-    useBikuri:$('tBikuri').checked, useShime:$('tShime').checked,
-  };
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),2200);}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function store(k,v){ if(v===undefined){ try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;} } localStorage.setItem(k,JSON.stringify(v)); }
+
+/* タブ */
+document.querySelectorAll('.tabbtn').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabbtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
+  $('page-'+b.dataset.tab).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});
+});
+
+/* ===== v2: 用途別AIルーター ===== */
+const AI_ROUTER={
+  chat_fast:{label:'速い',model:'gemini-2.0-flash-lite',temp:0.7,max:1000},
+  chat_high:{label:'高精度',model:'gemini-2.0-flash',temp:0.8,max:1400},
+  search:{label:'検索連携',model:'gemini-2.0-flash',temp:1.0,max:1400},
+  vision:{label:'画像認識',model:'gemini-2.0-flash',temp:0.4,max:1200},
+  light:{label:'軽量',model:'gemini-2.0-flash-lite',temp:0.6,max:600}
+};
+function getSearchMode(){return localStorage.getItem('bannou_search')||'auto';}
+function getSpeed(){return localStorage.getItem('bannou_speed')||'high';}
+function setSearchMode(v){localStorage.setItem('bannou_search',v);}
+function setSpeed(v){localStorage.setItem('bannou_speed',v);}
+function pickEngine(hasImage){
+  const s=getSearchMode(), sp=getSpeed();
+  if(hasImage) return 'vision';
+  if(s!=='off') return 'search';
+  return sp==='fast'?'chat_fast':'chat_high';
 }
-function renderPresets(){
-  const g=$('presetGrid');g.innerHTML='';
-  PRESETS.forEach(p=>{
-    const d=document.createElement('div');d.className='preset'+(p.id===activePreset?' active':'');
-    d.innerHTML=`<b>${p.name}</b><span>${p.desc} • キモ${p.kimo} 絵${p.emoji}</span>`;
-    d.onclick=()=>{activePreset=p.id;$('kimo').value=p.kimo;$('emojiLevel').value=p.shitago?p.emoji:p.emoji;$('shitago').value=p.shitago;
-      if(p.id==='昭和'){$('tKatakana').checked=true;$('tKaomoji').checked=true;}
-      if(p.id==='爽やか'){$('shitago').value=1;}
-      syncLabels();renderPresets();toast(p.name+' にしたよぉ〜😍💕');};
-    g.appendChild(d);
-  });
+function refreshRouterUI(){
+  const s=getSearchMode(), sp=getSpeed();
+  document.querySelectorAll('#searchSeg button').forEach(b=>b.classList.toggle('on',b.dataset.s===s));
+  $('speedSel').value=sp;
+  const e=pickEngine(!!pendingImage);
+  const r=AI_ROUTER[e];
+  $('engineMemo').textContent='使用AI: '+r.label+' ('+r.model+')'+(s!=='off'?'・検索'+(s==='on'?'ON':'自動'):'・検索OFF')+(pendingImage?'・画像あり→Vision固定':'');
+  if($('pillLabel'))$('pillLabel').textContent=(sp==='fast'?'速い':'高精度')+(s==='off'?'':'・検索'+(s==='on'?'ON':'自動'));
 }
-function renderEmojiPick(){
-  const w=$('emojiPick');w.innerHTML='';
-  EMOJI_ALL.forEach(e=>{
-    const b=document.createElement('button');b.textContent=e;b.className=emojiEnabled.has(e)?'on':'';b.type='button';
-    b.onclick=()=>{emojiEnabled.has(e)?emojiEnabled.delete(e):emojiEnabled.add(e);b.classList.toggle('on');};
+document.querySelectorAll('#searchSeg button').forEach(b=>b.onclick=()=>{setSearchMode(b.dataset.s);refreshRouterUI();});
+$('speedSel').onchange=e=>{setSpeed(e.target.value);refreshRouterUI();};
+
+/* ===== モデルパネル・履歴ドロワー（ChatGPT mobile式） ===== */
+function openSheet(){$('modelSheet').classList.add('open');$('sheetBack').classList.add('show');}
+function closeSheet(){$('modelSheet').classList.remove('open');$('sheetBack').classList.remove('show');}
+function openDrawer(){renderDrawer();$('drawer').classList.add('open');$('drawerBack').classList.add('show');}
+function closeDrawer(){$('drawer').classList.remove('open');$('drawerBack').classList.remove('show');}
+function renderDrawer(){
+  const w=$('drawerList');if(!w) return;w.innerHTML='';
+  threads.forEach(t=>{
+    const b=document.createElement('button');b.className='ditem'+(t.id===curThread?' on':'');
+    const msg=document.createElement('b');msg.textContent=t.title||'無題';
+    const sm=document.createElement('small');sm.textContent=(t.msgs?t.msgs.length:0)+'件のメッセージ';
+    b.appendChild(msg);b.appendChild(sm);
+    b.onclick=()=>{curThread=t.id;const th=cur();activeMode=th.mode||'all';renderModes();saveThreads();renderThreads();renderChat();closeDrawer();};
     w.appendChild(b);
   });
 }
-function renderChips(){
-  const hc=$('heroChips'),sg=$('sampleGallery');hc.innerHTML='';sg.innerHTML='';
-  SAMPLES.slice(0,6).forEach(s=>{const c=document.createElement('button');c.className='chip';c.textContent='💬 '+s.slice(0,16)+'…';c.onclick=()=>{$('input').value=s;syncCount();toast('セットしたよぉ〜😘💕');};hc.appendChild(c);});
-  SAMPLES.forEach(s=>{const c=document.createElement('button');c.className='chip';c.textContent=s.slice(0,22);c.onclick=()=>{$('input').value=s;syncCount();document.getElementById('app').scrollIntoView({behavior:'smooth'});};sg.appendChild(c);});
-}
-const KIMO_TXT=['','Lv.1 爽やか☀️','Lv.2 ほのぼの😊','Lv.3 クセ強め😅','Lv.4 かなりキモい😍','Lv.5 限界突破‼️🤣'];
-const EMOJI_TXT=['','Lv.1 ひかえめ🌱','Lv.2 ふつう😊','Lv.3 多め💕','Lv.4 盛り盛り💕','Lv.5 爆盛り❤️😍✨'];
-const SHITAGO_TXT=['','Lv.1 紳士的🙏','Lv.2 ほのめかし🍺','Lv.3 積極的😘','Lv.4 グイグイ💌','Lv.5 危険水域⚠️🤣'];
-function syncLabels(){$('kimoVal').textContent=KIMO_TXT[$('kimo').value];$('emojiVal').textContent=EMOJI_TXT[$('emojiLevel').value];$('shitagoVal').textContent=SHITAGO_TXT[$('shitago').value];}
-function syncCount(){const v=$('input').value;$('charCount').textContent=v.length;$('lineCount').textContent=v?v.split('\n').length:0;}
+$('modelPill').onclick=openSheet;
+$('btnSheetDone').onclick=closeSheet;
+$('sheetBack').onclick=closeSheet;
+$('btnDrawer').onclick=openDrawer;
+$('btnDrawerClose').onclick=closeDrawer;
+$('drawerBack').onclick=closeDrawer;
+$('btnDrawerNew').onclick=()=>{closeDrawer();$('btnNewThread').click();};
+$('btnNewTop').onclick=()=>$('btnNewThread').click();
 
-let history=JSON.parse(localStorage.getItem('ojisan_hist')||'[]');
-function saveHist(input,output){history.unshift({t:Date.now(),input:input.slice(0,60),output});history=history.slice(0,20);localStorage.setItem('ojisan_hist',JSON.stringify(history));renderHist();}
-function renderHist(){
-  const w=$('history');if(!history.length){w.innerHTML='<p style="font-size:13px;color:var(--muted)">履歴はまだないよぉ〜🥺</p>';return;}
-  w.innerHTML='';
-  history.forEach((h,i)=>{
-    const d=document.createElement('div');d.className='history-item';
-    d.innerHTML=`<b>${esc(h.output.slice(0,50))}…</b><small>${new Date(h.t).toLocaleString()} ・元: ${esc(h.input)}…</small>`;
-    d.onclick=()=>{$('input').value=h.input;doConvert(false);};
+/* ===== モード ===== */
+const MODES=[
+ {id:'all',n:'なんでも',d:'日常の助手',sys:'あなたは高校生の頼れる日常アシスタント。親しみやすく、簡潔で実用的に答える。箇条書きを多用。'},
+ {id:'ask',n:'質問',d:'解説・調査',sys:'あなたは分かりやすい解説者。結論→理由→具体例の順。最後に「次にやる1歩」を付ける。検索結果がある場合は出典を意識した断定にする。'},
+ {id:'nayami',n:'悩み',d:'傾聴・整理',sys:'あなたは共感的な相談相手。まず共感し、悩みを3点に整理し、選択肢と小さな一歩を提案。断定的な医療・法律判断はせず、必要なら専門家相談を促す。'},
+ {id:'idea',n:'生成',d:'アイデア出し',sys:'あなたは発想豊かな企画マン。高校生向けにノリ良く、実現可能性も一言付ける。'},
+ {id:'renraku',n:'連絡',d:'文面作成',sys:'あなたは連絡文のプロ。相手・用件から丁寧で失礼のない文面を作る。LINE用短文と丁寧文の2案を出す。'},
+ {id:'yoyaku',n:'要約',d:'短く整える',sys:'あなたは編集者。長い文章を3行要約→箇条書き→短文の順で整える。誤字脱字も直す。'}
+];
+let activeMode='all';
+function renderModes(){const g=$('modeGrid');g.innerHTML='';MODES.forEach(m=>{const d=document.createElement('div');d.className='mode'+(m.id===activeMode?' active':'');d.innerHTML='<b>'+m.n+'</b><span>'+m.d+'</span>';d.onclick=()=>{activeMode=m.id;renderModes();};g.appendChild(d);});}
+renderModes();
+
+/* ===== 設定 ===== */
+function getKey(){return localStorage.getItem('bannou_gemini_key')||'';}
+function getBaseModel(){return localStorage.getItem('bannou_gemini_model')||'gemini-2.0-flash-lite';}
+function refreshApiStatus(){const k=getKey();const dot=$('apiDot'),st=$('apiStatus');if(k){dot.className='dot ok';st.textContent='Gemini接続可';}else{dot.className='dot local';st.textContent='オフライン簡易モード';}$('apiKey').value=k;$('apiModel').value=getBaseModel();}
+refreshApiStatus();
+$('btnSaveKey').onclick=()=>{localStorage.setItem('bannou_gemini_key',$('apiKey').value.trim());localStorage.setItem('bannou_gemini_model',$('apiModel').value);refreshApiStatus();toast('保存しました');};
+$('btnDelKey').onclick=()=>{localStorage.removeItem('bannou_gemini_key');refreshApiStatus();toast('削除しました');};
+$('btnTestKey').onclick=async()=>{$('keyMsg').textContent='テスト中…';try{const r=await callGeminiEx({system:'あなたはテスト用アシスタント。「接続OK」とだけ返して。',userText:'接続テスト',engine:'light',searchMode:'off'});$('keyMsg').textContent='成功: '+r.text.slice(0,80);toast('接続OK');refreshApiStatus();}catch(e){$('keyMsg').textContent='失敗: '+String(e.message).slice(0,200);}};
+
+/* ===== Gemini呼び出し（用途別・検索対応） ===== */
+async function callGeminiEx(opts){
+  const key=getKey();if(!key) throw new Error('NO_KEY');
+  const engine=AI_ROUTER[opts.engine||'chat_high'];
+  const model=engine.model;
+  const url='https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent?key='+encodeURIComponent(key);
+  const history=(opts.history||[]).slice(-8).map(m=>({role:m.role==='user'?'user':'model',parts:[{text:m.text}]}));
+  const userParts=[];
+  if(opts.userText) userParts.push({text:opts.userText});
+  (opts.images||[]).forEach(im=>userParts.push({inline_data:{mime_type:im.mime,data:im.data}}));
+  const contents=history.concat([{role:'user',parts:userParts}]);
+  let system=(opts.system||'');
+  if(opts.summary) system+='\n【これまでの要約】\n'+opts.summary;
+  if(localStorage.getItem('bannou_mycal')) system+=' 話者は「'+localStorage.getItem('bannou_mycal')+'」。';
+  const body={system_instruction:{parts:[{text:system}]},contents:contents,generationConfig:{temperature:engine.temp,maxOutputTokens:engine.max}};
+  const useSearch=(opts.searchMode||'off')!=='off';
+  if(useSearch) body.tools=[{google_search:{}}];
+  let res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!res.ok&&useSearch){
+    const t=await res.text();
+    if(res.status===400){ res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system_instruction:{parts:[{text:system}]},contents:contents,generationConfig:{temperature:0.8,maxOutputTokens:engine.max}})}); }
+    else throw new Error('Gemini '+res.status+': '+t.slice(0,200));
+  }
+  if(!res.ok){const t=await res.text();throw new Error('Gemini '+res.status+': '+t.slice(0,200));}
+  const data=await res.json();
+  const cand=data?.candidates?.[0];
+  const text=(cand?.content?.parts||[]).map(p=>p.text||'').join('').trim();
+  if(!text) throw new Error('空応答');
+  const sources=[];
+  const chunks=cand?.groundingMetadata?.groundingChunks||[];
+  chunks.forEach(c=>{const w=c.web;if(w&&w.uri&&!sources.some(s=>s.uri===w.uri)) sources.push({title:w.title||w.uri,uri:w.uri});});
+  return {text:text,sources:sources,grounded:sources.length>0||useSearch,model:model,engineLabel:engine.label};
+}
+/* 旧互換：軽量で検索なし */
+async function callGemini(system,userText,history){
+  const r=await callGeminiEx({system:system,userText:userText,history:history,engine:'light',searchMode:'off'});
+  return r.text;
+}
+function localFallback(mode,text,hasImage){
+  if(hasImage) return '画像を受け付けたけど、オフライン＋キーなしでは解析できません。「設定」でキーを入れてネット接続で送り直してください。';
+  if(mode==='renraku') return '【下書き（オフライン）】\n'+text+'\n\n→ APIキー設定で丁寧文2案に自動仕上げできます。';
+  if(mode==='yoyaku'){const s=text.slice(0,120);return '【3行要約（オフライン）】\n・ '+s+'\n・ 要点を確認してください';}
+  if(mode==='idea') return '【10案（オフライン雛形）】\n1. 定番 2. 限定 3. コラボ 4. ランキング 5. 体験型 6. SNS連動 7. 夜企画 8. 初心者枠 9. ガチ枠 10. ネタ枠\n\nテーマ「'+text.slice(0,40)+'」';
+  if(mode==='nayami') return 'つらいね、よく話してくれたね。\n整理すると：\n1. 何が起きたか\n2. 一番しんどい点\n3. 明日できる小さい一歩\n\n「'+text.slice(0,60)+'」について詳しく教えてね。※深刻な場合は信頼できる大人にも相談してね。';
+  return '【簡易回答（オフライン）】\n「'+text.slice(0,80)+'」を受け付けたよ。ネット＋キーで高精度回答になります。';
+}
+function makeFollowUps(mode,userText){
+  const kw=String(userText||'').replace(/\n/g,' ').slice(0,14)||'これ';
+  if(mode==='ask') return ['「'+kw+'」の具体例をもっと','反対意見・注意点も教えて','次にやる1歩だけ教えて'];
+  if(mode==='nayami') return ['選択肢を3つに絞って','明日の一歩だけ決めて','同じ悩みの乗り越え方を教えて'];
+  if(mode==='idea') return ['10案に広げて','1案だけ深掘りして','低予算版も出して'];
+  if(mode==='renraku') return ['短いLINE版にして','丁寧版にして','件名も付けて'];
+  if(mode==='yoyaku') return ['3行でまとめ直して','箇条書きだけにして','小学生向けに言い換えて'];
+  return ['深掘りして','3行でまとめ直して','別の視点でも教えて'];
+}
+
+/* ===== 画像添付（Vision特化・保存しない） ===== */
+let pendingImage=null;
+$('btnImg').onclick=()=>$('imgInput').click();
+$('btnImgClear').onclick=()=>{pendingImage=null;$('imgInput').value='';$('imgPrev').style.display='none';refreshRouterUI();};
+$('imgInput').onchange=()=>{
+  const f=$('imgInput').files[0];if(!f) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const max=1280;let w=img.width,h=img.height;
+      const sc=Math.min(1,max/Math.max(w,h));w=Math.round(w*sc);h=Math.round(h*sc);
+      const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+      const url=c.toDataURL('image/jpeg',0.85);
+      pendingImage={mime:'image/jpeg',data:url.split(',')[1]};
+      $('imgThumb').src=url;$('imgPrev').style.display='flex';refreshRouterUI();toast('画像を添付（Visionで解析）');
+    };
+    img.src=reader.result;
+  };
+  reader.readAsDataURL(f);
+};
+
+/* ===== チャット v2 ===== */
+let threads=store('bannou_threads')||[{id:'t1',title:'はじめて',mode:'all',summary:'',msgs:[{role:'ai',text:'こんにちは。調べものは「調べる」、相談や作成は「調べない」がおすすめです。画像ボタンから写真も送れます。',time:Date.now(),sources:[],follow:[],engine:'高精度'}]}];
+if(!Array.isArray(threads)||!threads.length) threads=[{id:'t1',title:'はじめて',mode:'all',summary:'',msgs:[]}];
+let curThread=threads[0].id;
+function saveThreads(){store('bannou_threads',threads);}
+function cur(){return threads.find(t=>t.id===curThread)||threads[0];}
+function renderThreads(){const s=$('threadSel');s.innerHTML='';threads.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=(t.title||'無題')+'（'+(t.msgs?t.msgs.length:0)+'）';if(t.id===curThread)o.selected=true;s.appendChild(o);});if(typeof renderDrawer==='function')renderDrawer();}
+function renderChat(){
+  const c=cur();const w=$('chatList');w.innerHTML='';
+  if(!(c.msgs||[]).length){
+    const sug=[
+      {t:'今日の最新ニュースを要約して',l:'最新ニュース',c:'t1',svg:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'},
+      {t:'丁寧な連絡文の例を作って',l:'連絡文を作る',c:'t2',svg:'<path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/><path d="M13.5 6.5l3 3"/>'},
+      {t:'文化祭の出し物アイデアを10個出して',l:'アイデアを出す',c:'t3',svg:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.8.6 1.5 1.6 1.5 2.6h4c0-1 .7-2 1.5-2.6A6 6 0 0 0 12 3z"/>'},
+      {t:'__photo',l:'写真を読み取る',c:'t4',svg:'<rect x="3" y="7" width="18" height="13" rx="3"/><circle cx="12" cy="13" r="3.5"/><path d="M8.5 7L10 4.5h4L15.5 7"/>'}
+    ];
+    const dd=new Date(),wd=['日','月','火','水','木','金','土'][dd.getDay()],hh=dd.getHours();
+    const greet=hh<5?'お疲れさまです':hh<10?'おはようございます':hh<17?'こんにちは':'こんばんは';
+    const hero=document.createElement('div');hero.className='hero';
+    const orb=document.createElement('div');orb.className='hero-orb';hero.appendChild(orb);
+    const eb=document.createElement('div');eb.className='hero-eyebrow';eb.textContent=(dd.getMonth()+1)+'月'+dd.getDate()+'日（'+wd+'）・'+greet;hero.appendChild(eb);
+    const h=document.createElement('h1');h.innerHTML='何を<span class="grad">お手伝い</span>しますか？';hero.appendChild(h);
+    const p=document.createElement('p');p.textContent='質問・調べもの・文章作成・写真の読み取りができます。';hero.appendChild(p);
+    const grid=document.createElement('div');grid.className='sug-grid';
+    sug.forEach(s=>{
+      const b=document.createElement('button');
+      b.innerHTML='<span class="sug-ico '+s.c+'"><svg viewBox="0 0 24 24">'+s.svg+'</svg></span><span>'+s.l+'</span>';
+      b.onclick=()=>{if(s.t==='__photo'){$('imgInput').click();}else{sendChat(s.t);}};
+      grid.appendChild(b);
+    });
+    hero.appendChild(grid);w.appendChild(hero);return;
+  }
+  (c.msgs||[]).forEach((m,idx)=>{
+    const d=document.createElement('div');d.className='msg '+(m.role==='user'?'user':'ai');
+    let html='';
+    if(m.role==='ai'&&m.engine) html+='<span class="engine'+(String(m.engine).includes('画像')?' vision':String(m.engine).includes('検索')?' search':'')+'">'+esc(m.engine)+'</span><br>';
+    html+=esc(m.text);
+    html+='<small>'+new Date(m.time).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+'</small>';
+    if(m.role==='ai'&&m.sources&&m.sources.length){
+      html+='<div class="srcrow">'+m.sources.slice(0,5).map(s=>'<a class="src" href="'+esc(s.uri)+'" target="_blank" rel="noopener">出典: '+esc(String(s.title||'リンク').slice(0,18))+'</a>').join('')+'</div>';
+    }
+    if(m.role==='ai'&&m.follow&&m.follow.length&&!m.error){
+      html+='<div class="followrow">'+m.follow.slice(0,3).map(f=>'<button class="follow" data-f="'+esc(f)+'">'+esc(f)+'</button>').join('')+'</div>';
+    }
+    if(m.error){
+      html+='<div><button class="btn btn-ghost btn-small retrybtn" data-r="'+idx+'">再試行する</button></div>';
+    }
+    d.innerHTML=html;w.appendChild(d);
+  });
+  w.querySelectorAll('.follow').forEach(b=>b.onclick=()=>{$('chatInput').value=b.dataset.f;sendChat();});
+  w.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>retrySend(parseInt(b.dataset.r,10)));
+  w.scrollTop=w.scrollHeight;
+}
+$('threadSel').onchange=e=>{curThread=e.target.value;const t=cur();activeMode=t.mode||'all';renderModes();renderChat();};
+$('btnNewThread').onclick=()=>{const id='t'+Date.now();threads.unshift({id:id,title:'相談'+(threads.length+1),mode:activeMode,summary:'',msgs:[]});curThread=id;saveThreads();renderThreads();renderChat();toast('新規スレッド');};
+$('btnClearChat').onclick=()=>{cur().msgs=[];cur().summary='';saveThreads();renderChat();};
+document.querySelectorAll('.qchip').forEach(b=>b.onclick=()=>{const v=$('chatInput').value;$('chatInput').value=b.dataset.q+v;$('chatInput').focus();});
+$('btnSend').onclick=()=>sendChat();
+async function updateSummaryAsync(t){
+  try{
+    if((t.msgs||[]).length<8) return;
+    if(t._sumAt&&(t.msgs.length-t._sumAt)<6) return;
+    const txt=(t.msgs||[]).slice(-10).map(m=>(m.role==='user'?'Q: ':'A: ')+String(m.text||'').slice(0,200)).join('\n');
+    const r=await callGeminiEx({system:'あなたは要約係。会話を200字以内で要点のみ要約。',userText:'以下を要約:\n'+txt,engine:'light',searchMode:'off'});
+    t.summary=r.text.slice(0,400);t._sumAt=t.msgs.length;saveThreads();
+  }catch(e){}
+}
+async function sendChat(presetText){
+  const inp=$('chatInput');const text=(presetText||inp.value).trim();
+  const hasImage=!!pendingImage;
+  if(!text&&!hasImage) return;
+  const t=cur();t.mode=activeMode;
+  const engineKey=pickEngine(hasImage);
+  const searchMode=getSearchMode();
+  const userLabel=(text||'この画像を解説して')+(hasImage?'\n[画像1枚付き]':'');
+  if(!presetText) inp.value='';
+  if(!t.title||t.title.startsWith('相談')||t.title==='はじめて') t.title=String(text||'画像相談').slice(0,14);
+  const myImages=hasImage?[pendingImage]:[];
+  pendingImage=null;$('imgInput').value='';$('imgPrev').style.display='none';refreshRouterUI();
+  t.msgs.push({role:'user',text:userLabel,time:Date.now()});saveThreads();renderThreads();renderChat();
+  const mode=MODES.find(m=>m.id===activeMode)||MODES[0];
+  const wait=document.createElement('div');wait.className='msg ai';wait.setAttribute('aria-label','考え中');wait.innerHTML='<span class="typing"><span></span><span></span><span></span></span>';$('chatList').appendChild(wait);$('chatList').scrollTop=999999;
+  let sys=mode.sys;
+  if(hasImage) sys='あなたは画像理解の専門家。写真・スクショ・図表・手書きを日本語で正確に読む。文字は原文引用→要約→気づきの順。断定できない所は推測と明記。'+sys;
+  if(searchMode==='on') sys+=' 必ず最新情報を検索して、古い知識だけで答えない。';
+  try{
+    const r=await callGeminiEx({system:sys,userText:text||'この画像を詳しく解説してください。',history:t.msgs.slice(0,-1),images:myImages,engine:engineKey,searchMode:searchMode,summary:t.summary});
+    const follow=makeFollowUps(activeMode,text||'画像の内容');
+    t.msgs.push({role:'ai',text:r.text,time:Date.now(),sources:r.sources||[],follow:follow,engine:r.engineLabel+(r.grounded&&searchMode!=='off'?'・検索':'')});
+    saveThreads();renderThreads();renderChat();updateSummaryAsync(t);
+  }catch(e){
+    const msg=String(e.message||'');
+    const fb=localFallback(activeMode,text||'',hasImage);
+    t.msgs.push({role:'ai',text:fb+(msg&&msg!=='NO_KEY'?'\n\n(エラー: '+msg.slice(0,80)+')':''),time:Date.now(),sources:[],follow:[],engine:'オフライン',error:true,pending:{text:text}});
+    saveThreads();renderChat();
+    if(msg!=='NO_KEY') toast('AI失敗→簡易回答');
+  }
+}
+async function retrySend(aiIdx){
+  const t=cur();const aiMsg=t.msgs[aiIdx];if(!aiMsg||!aiMsg.error) return;
+  const userMsg=t.msgs[aiIdx-1];
+  const text=(aiMsg.pending&&aiMsg.pending.text)||(userMsg?String(userMsg.text||'').replace(/\n\[画像1枚付き\]$/,''):'');
+  t.msgs.splice(aiIdx,1);saveThreads();renderChat();
+  $('chatInput').value=text;sendChat();
+}
+$('myCall').value=localStorage.getItem('bannou_mycal')||'';
+$('myCall').onchange=e=>localStorage.setItem('bannou_mycal',e.target.value);
+renderThreads();renderChat();refreshRouterUI();
+/* 音声入力（端末標準・無料） */
+$('btnVoice').onclick=()=>{
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast('音声非対応ブラウザ');return;}
+  const r=new SR();r.lang='ja-JP';r.onresult=e=>{$('chatInput').value+=e.results[0][0].transcript;};r.onerror=()=>toast('音声失敗');r.start();toast('話してね…');
+};
+
+/* ===== リマインダー（ローカル） ===== */
+let rems=store('bannou_rems')||[];
+function saveRems(){store('bannou_rems',rems);}
+function renderRems(){
+  const w=$('remList');w.innerHTML=rems.length?'':'<p style="font-size:13px;color:var(--muted)">まだ登録なし。忘れがちなことを入れとこう。</p>';
+  const now=Date.now();
+  rems.slice().sort((a,b)=>a.when-b.when).forEach(r=>{
+    const d=document.createElement('div');d.className='rem-item'+(r.done?' done':'')+((!r.done&&r.when<=now)?' due':'');
+    const dt=new Date(r.when).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    d.innerHTML='<b>'+esc(r.title)+'</b><small>'+dt+'・'+(r.repeat==='daily'?'毎日':r.repeat==='weekly'?'毎週':'単発')+(r.memo?'・'+esc(r.memo):'')+'</small><div class="row" style="margin-top:6px"><button class="btn btn-ghost btn-small" data-a="done">'+(r.done?'戻す':'完了')+'</button><button class="btn btn-ghost btn-small" data-a="del">削除</button></div>';
+    d.querySelector('[data-a=done]').onclick=()=>{r.done=!r.done;saveRems();renderRems();};
+    d.querySelector('[data-a=del]').onclick=()=>{rems=rems.filter(x=>x.id!==r.id);saveRems();renderRems();};
     w.appendChild(d);
   });
 }
-function bumpTotal(){let n=+(localStorage.getItem('ojisan_total')||0)+1;localStorage.setItem('ojisan_total',n);$('totalCount').textContent=n;}
-$('totalCount').textContent=localStorage.getItem('ojisan_total')||0;
-
-function resultCard(title,badge,text,isHot){
-  const id='r'+Math.random().toString(36).slice(2,8);
-  return `<div class="result-card">
-    <div class="result-head">${title} <span class="badge ${isHot?'hot':''}">${badge}</span><span style="margin-left:auto;font-size:11px;color:var(--muted)">${text.length}文字</span></div>
-    <div class="result-body" id="${id}">${esc(text)}</div>
-    <div class="result-actions">
-      <button class="icon-btn" onclick="copyText('${id}')">📋 コピー</button>
-      <button class="icon-btn" onclick="shareX('${id}')">𝕏 投稿</button>
-      <button class="icon-btn" onclick="shareLine('${id}')">💬 LINE</button>
-      <button class="icon-btn" onclick="shareDiscord('${id}')">🎮 Discord</button>
-      <button class="icon-btn" onclick="speak('${id}')">🔊 読む</button>
-    </div></div>`;
-}
-window.copyText=id=>{navigator.clipboard.writeText(document.getElementById(id).innerText).then(()=>toast('コピーしたよぉ〜😍💕'));};
-window.shareX=id=>{const t=encodeURIComponent(document.getElementById(id).innerText.slice(0,130)+'… #オジサン翻訳機');window.open('https://twitter.com/intent/tweet?text='+t,'_blank');};
-window.shareLine=id=>{const t=encodeURIComponent(document.getElementById(id).innerText);window.open('https://line.me/R/share?text='+t,'_blank');};
-window.shareDiscord=id=>{const t=document.getElementById(id).innerText;navigator.clipboard.writeText(t).then(()=>{window.open('https://discord.com/channels/@me','_blank');toast('コピーしたよぉ〜😍Discordに貼ってねぇ〜🎮💕');});};
-window.speak=id=>{const u=new SpeechSynthesisUtterance(document.getElementById(id).innerText);u.lang='ja-JP';u.rate=.95;speechSynthesis.cancel();speechSynthesis.speak(u);toast('読み上げるよぉ〜🎵😘');};
-
-function renderReport(text,o){
-  const {score,emojiCount,kao}=kimoScore(text,o);
-  let rank=score>=85?'限界突破級 ‼️🤣💕':score>=65?'ベテランおじさん 😍🍺':score>=40?'駆け出しおじさん 😊✨':'まだ爽やか ☀️🌱';
-  $('report').innerHTML=`
-    <div style="display:flex;gap:10px;align-items:baseline"><b style="font-size:30px">${score}</b><span style="font-weight:800">/ 100点 ・ ${rank}</span></div>
-    <div class="score-bar"><div class="score-fill" style="width:${score}%"></div></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:12.5px;font-weight:700;color:var(--muted)">
-      <span>❤️ 絵文字 ${emojiCount}個</span><span>•</span><span>(^^♪ 顔文字 ${kao}個</span><span>•</span><span>📝 ${text.length}文字</span><span>•</span><span>🎭 ${activePreset}</span>
-    </div>
-    <p style="font-size:13px;color:var(--muted)">${score>=70?'完璧だよぉ〜😍💕このまま送ったらブロックされちゃうかもぉ〜(^_^;)💦':'もっと盛りたいなら絵文字LvとキモさLvを上げてみてねぇ〜💪😘✨'}</p>`;
-  // LINEプレビュー
-  $('lineName').textContent=(o.target||'ゆみちゃん')+' 💕';
-  const parts=text.split('\n').filter(Boolean).slice(0,4);
-  $('lineBody').innerHTML=parts.map((p,i)=>`<div class="bubble">${esc(p)}<div class="bubble-time">${i===parts.length-1?'既読 ':'既読 '}12:3${i}</div></div>`).join('');
-}
-
-async function doConvert(withGemini=true){
-  const raw=$('input').value;const o=currentOpts();
-  const useGem=$('geminiUse').checked;
-  $('btnConvert').textContent='⏳ 変換中…';
-  try{
-    if(withGemini&&useGem){
-      try{
-        const g=await geminiConvert(raw,o);
-        $('results').innerHTML=resultCard('🤖 Gemini仕上げ','AI高精度',g,true)+resultCard('💪 ローカル案A','比較用',localConvert(raw,o,Date.now()%100000),false)+resultCard('💪 ローカル案B','比較用',localConvert(raw,o,(Date.now()%100000)+7),false);
-        renderReport(g,o);saveHist(raw,g);bumpTotal();toast('Geminiで仕上げたよぉ〜😍✨');
-        return;
-      }catch(e){toast('Gemini失敗→ローカルで頑張るよぉ〜🥺💦 '+String(e.message).slice(0,60));}
+$('btnAddRem').onclick=()=>{
+  const t=$('remTitle').value.trim();const dt=$('remDate').value;
+  if(!t||!dt){toast('タイトルと日時を入れて');return;}
+  rems.push({id:'r'+Date.now(),title:t,when:new Date(dt).getTime(),repeat:$('remRepeat').value,memo:$('remMemo').value.trim(),done:false,notified:false});
+  $('remTitle').value='';$('remMemo').value='';saveRems();renderRems();toast('登録したよ');
+};
+$('btnNotif').onclick=async()=>{try{const p=await Notification.requestPermission();toast('通知: '+p);}catch{toast('通知非対応');}};
+renderRems();
+setInterval(()=>{
+  const now=Date.now();let hit=false;
+  rems.forEach(r=>{
+    if(!r.done&&!r.notified&&r.when<=now){
+      r.notified=true;hit=true;
+      toast(r.title);
+      try{if(navigator.vibrate)navigator.vibrate([200,100,200]);}catch(e){}
+      try{if(Notification.permission==='granted')new Notification(r.title,{body:r.memo||'時間だよ'});}catch(e){}
+      if(r.repeat==='daily'){rems.push({id:'r'+Date.now()+Math.random(),title:r.title,when:r.when+86400000,repeat:'daily',memo:r.memo,done:false,notified:false});}
+      if(r.repeat==='weekly'){rems.push({id:'r'+Date.now()+Math.random(),title:r.title,when:r.when+604800000,repeat:'weekly',memo:r.memo,done:false,notified:false});}
     }
-    const s1=Math.floor(Math.random()*1e9),s2=s1+101,s3=s1+202;
-    const a=localConvert(raw,o,s1),b=localConvert(raw,o,s2),c=localConvert(raw,o,s3);
-    $('results').innerHTML=resultCard('👑 本命','おすすめ',a,true)+resultCard('🎲 バリエーションB','別パターン',b,false)+resultCard('🎲 バリエーションC','別パターン',c,false);
-    renderReport(a,o);saveHist(raw,a);bumpTotal();
-  }finally{$('btnConvert').textContent='✨ おじさん化する ✨';}
+  });
+  if(hit){saveRems();renderRems();}
+},15000);
+$('btnTodoPlan').onclick=async()=>{
+  const v=$('todoInput').value.trim();if(!v){toast('やることを入れて');return;}
+  const prompt='以下を高校生の今日の計画に整えて。優先順位・時間割・所要目安・寝る時間死守で。箇条書きで簡潔に。\n'+v;
+  $('todoOut').style.display='block';$('todoOut').textContent='生成中…';
+  try{$('todoOut').textContent=await callGemini('あなたは時間管理コーチ。',prompt);}
+  catch{const items=v.split(/[、\n]+/).filter(Boolean);$('todoOut').textContent='【今日の計画（オフライン）】\n'+items.map((s,i)=>(i+1)+'. '+s+'（30〜60分目安）').join('\n');}
+};
+
+/* ===== 情報 ===== */
+$('btnWx').onclick=async()=>{
+  const parts=$('citySel').value.split(',');const out=$('wxOut');out.textContent='取得中…';
+  try{
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+parts[0]+'&longitude='+parts[1]+'&current=temperature_2m,weather_code,wind_speed_10m&timezone=Asia%2FTokyo&forecast_days=1');
+    const j=await r.json();
+    const t=j.current.temperature_2m, w=j.current.weather_code;
+    const wj=w===0?'快晴':w<3?'晴れ・曇り':w<50?'曇り':w<70?'雨':'雷雨の可能性';
+    out.innerHTML='現在 <b style="font-size:20px">'+t+'℃</b> '+wj+'・風速 '+j.current.wind_speed_10m+'m/s';
+  }catch(e){out.textContent='取得失敗（ネット確認）。';}
+};
+$('btnWiki').onclick=async()=>{
+  const q=$('wikiQ').value.trim();if(!q)return;const o=$('wikiOut');o.style.display='block';o.textContent='検索中…';
+  try{
+    const r=await fetch('https://ja.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(q));
+    if(!r.ok) throw new Error('not found');
+    const j=await r.json();o.textContent=(j.title||q)+'\n'+(j.extract||'概要なし')+(j.content_urls&&j.content_urls.desktop&&j.content_urls.desktop.page?'\n\n'+j.content_urls.desktop.page:'');
+  }catch{o.textContent='見つからず。表記を変えてみて。';}
+};
+document.querySelectorAll('[data-search]').forEach(b=>b.onclick=()=>{
+  const q=$('webQ').value.trim()||'高校生 おすすめ';
+  const urls={google:'https://www.google.com/search?q=',duck:'https://duckduckgo.com/?q=',youtube:'https://www.youtube.com/results?search_query=',maps:'https://www.google.com/maps/search/'};
+  window.open(urls[b.dataset.search]+encodeURIComponent(q),'_blank');
+});
+$('btnSumPrompt').onclick=()=>{
+  const q=$('webQ').value.trim()||'気になる話題';
+  const p='「'+q+'」について検索結果の要点を整理して。結論→3つのポイント→おすすめ1つ→注意点の順で高校生向けに。';
+  navigator.clipboard.writeText(p).then(()=>toast('要約プロンプトをコピー→チャットに貼って'));
+};
+$('btnBrief').onclick=async()=>{
+  const v=$('briefIn').value.trim()||'今日の予定なし';
+  $('briefOut').style.display='block';$('briefOut').textContent='生成中…';
+  try{$('briefOut').textContent=await callGemini('あなたは朝の秘書。天気・予定・ニュースから今日の一言アドバイスを作る。150字以内。','以下からブリーフィング文を作って:\n'+v);}
+  catch{const d=new Date().toLocaleDateString('ja-JP',{month:'long',day:'numeric',weekday:'short'});$('briefOut').textContent='【'+d+' ブリーフィング（オフライン）】\n・予定: '+v;}
+};
+
+/* ===== 連絡・生成（速いAI固定） ===== */
+const TPLS=[
+ {id:'bukatu',n:'部活欠席',t:'部活を休みます。'},
+ {id:'baito',n:'バイト応募',t:'応募・面接希望。'},
+ {id:'asobi',n:'遊びの誘い',t:'友達を誘う。'},
+ {id:'kotowari',n:'断り',t:'角が立たない断り。'},
+ {id:'orei',n:'お礼',t:'お礼。'},
+ {id:'ayamaru',n:'謝罪',t:'謝罪。'}
+];
+let activeTpl='bukatu';
+function renderTpl(){const g=$('tplGrid');g.innerHTML='';TPLS.forEach(t=>{const d=document.createElement('div');d.className='tpl'+(t.id===activeTpl?' active':'');d.innerHTML=t.n+'<div style="font-size:11px;color:var(--muted);font-weight:400">'+t.t+'</div>';d.onclick=()=>{activeTpl=t.id;renderTpl();};g.appendChild(d);});}
+renderTpl();
+function offlineContact(){
+  const to=$('ctTo').value,from=$('ctFrom').value,body=$('ctBody').value||'（用件）',tone=$('ctTone').value;
+  if(activeTpl==='asobi') return to+'、おつかれ！\n'+body+'なんだけど、よかったら一緒に行かない？\n無理なら全然大丈夫！by '+from;
+  if(activeTpl==='kotowari') return to+'、誘ってくれてありがとう！\n'+body+'の件、今回は行けなさそう。\nまた誘ってくれると嬉しいです！ '+from;
+  return to+'\nお疲れさまです、'+from+'です。\n'+body+'。\nよろしくお願いします。\n（'+tone+'）';
 }
+$('btnMakeContact').onclick=async()=>{
+  const o=$('contactOut');o.style.display='block';o.textContent='作成中…';
+  const tpl=TPLS.find(t=>t.id===activeTpl).n;
+  const prompt='連絡文を作って。種類:'+tpl+' 相手:'+$('ctTo').value+' 自分:'+$('ctFrom').value+' 用件:'+$('ctBody').value+' トーン:'+$('ctTone').value+'。丁寧文と短文LINE用の2案。';
+  try{o.textContent=await callGemini('あなたは連絡文のプロ。',prompt);}
+  catch{o.textContent=offlineContact();}
+};
+$('btnCopyContact').onclick=()=>{navigator.clipboard.writeText($('contactOut').textContent).then(()=>toast('コピーした'));};
+$('btnLineContact').onclick=()=>{window.open('https://line.me/R/share?text='+encodeURIComponent($('contactOut').textContent),'_blank');};
+$('btnIdea10').onclick=async()=>{
+  const v=$('ideaIn').value.trim()||'週末の遊び';const o=$('ideaOut');o.style.display='block';o.textContent='発想中…';
+  try{o.textContent=await callGemini('あなたは企画マン。10案を箇条書きで。',v+'について面白い案10個出して。高校生向け。');}
+  catch{o.textContent='【10案（オフライン）】 '+v+'\n1. 定番 2. 限定 3. コラボ 4. ランキング 5. 体験型 6. SNS連動 7. 夜企画 8. 初心者枠 9. ガチ枠 10. ネタ枠';}
+};
+$('btnSns').onclick=async()=>{
+  const v=$('ideaIn').value.trim()||'今日の出来事';const o=$('ideaOut');o.style.display='block';o.textContent='作成中…';
+  try{o.textContent=await callGemini('あなたはSNS運用者。140字以内の投稿文＋ハッシュタグ3つを作る。','次の内容をSNS投稿文に: '+v);}
+  catch{o.textContent='【SNS案】'+v+' #日常 #高校生 #おすすめ';}
+};
 
-/* イベント */
-$('btnConvert').onclick=()=>doConvert(true);
-$('btn3').onclick=()=>doConvert(false);
-$('btnClear').onclick=()=>{$('input').value='';syncCount();};
-$('btnRandom').onclick=()=>{$('input').value=SAMPLES[Math.floor(Math.random()*SAMPLES.length)];syncCount();doConvert(false);};
-$('btnPaste').onclick=async()=>{try{$('input').value=await navigator.clipboard.readText();syncCount();toast('貼ったよぉ〜😘💕');}catch{toast('貼り付けできなかったよぉ〜🥺💦');}};
-$('input').addEventListener('input',syncCount);
-['kimo','emojiLevel','shitago'].forEach(id=>$(id).addEventListener('input',syncLabels));
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')doConvert(true);});
-$('btnClearHist').onclick=()=>{history=[];localStorage.removeItem('ojisan_hist');renderHist();};
-$('targetName').addEventListener('input',()=>$('lineName').textContent=($('targetName').value||'ゆみちゃん')+' 💕');
-// Gemini保存・テスト（APIキー埋め込み済み）
-const EMBEDDED_GEMINI_KEY="";
-if(!localStorage.getItem('ojisan_gemini_key')&&EMBEDDED_GEMINI_KEY){localStorage.setItem('ojisan_gemini_key',EMBEDDED_GEMINI_KEY);}
-if(localStorage.getItem('ojisan_gemini_key')){$('geminiKey').value=localStorage.getItem('ojisan_gemini_key');}
-$('geminiUse').checked=!!localStorage.getItem('ojisan_gemini_key');
-function geminiState(ok,msg){$('geminiDot').className='status-dot '+(ok===null?'':ok?'ok':'err');$('geminiStatus').textContent=msg;}
-$('btnGeminiSave').onclick=()=>{localStorage.setItem('ojisan_gemini_key',$('geminiKey').value.trim());geminiState(true,'保存したよぉ〜😍💕 あとはチェックをONにしてねぇ〜✨');toast('保存したよぉ〜🙏✨');};
-$('btnGeminiTest').onclick=async()=>{geminiState(null,'テスト中…⏳');try{const t=await geminiConvert('こんにちは。元気ですか？',currentOpts());geminiState(true,'接続OKだよぉ〜😍💕');toast('成功！ '+t.slice(0,30)+'…');}catch(e){geminiState(false,'失敗: '+String(e.message).slice(0,80));}};
-if(localStorage.getItem('ojisan_gemini_key'))geminiState(true,'埋め込みキーでGeminiモードONだよぉ〜😍✨');
-
-/* 初期化 */
-renderPresets();renderEmojiPick();renderChips();syncLabels();syncCount();renderHist();
-(function(){
-  const h=new Date().getHours();
-  $('heroPreview').textContent=localConvert('今日も一日お疲れ様。とても綺麗だったよ。また会いたいな。',{target:'ゆみちゃん',me:'おじさん',timeMode:'auto',kimo:4,emoji:4,shitago:2,useAisatsu:true,useHome:true,useKinkyo:true,useOffer:true,useKaomoji:true,useKatakana:true,useBikuri:true,useShime:true},42);
-})();
+/* ===== データ管理 ===== */
+$('btnExport').onclick=()=>{
+  const data={threads:threads,rems:rems,exported:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bannou-backup.json';a.click();toast('書き出しした');
+};
+$('btnWipe').onclick=()=>{if(!confirm('全部消す？'))return;localStorage.removeItem('bannou_threads');localStorage.removeItem('bannou_rems');location.reload();};
 </script>
 </body>
 </html>

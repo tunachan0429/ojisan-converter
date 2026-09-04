@@ -1,6 +1,6 @@
 {
-  "appId": "com.ojisan.converter",
-  "appName": "オジサン翻訳機",
+  "appId": "com.my.bannouai",
+  "appName": "万能AI助手",
   "webDir": "www",
   "ios": {
     "contentInset": "automatic",

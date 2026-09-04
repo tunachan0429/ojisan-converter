@@ -15,6 +15,8 @@ on:
 jobs:
   build-ipa:
     runs-on: macos-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -52,13 +54,23 @@ jobs:
       - name: Package unsigned IPA
         working-directory: ios/App
         run: |
-          rm -rf Payload OjisanConverter-unsigned.ipa
+          rm -rf Payload BannouAI-unsigned.ipa
           mkdir Payload
           cp -r build/Build/Products/Release-iphoneos/App.app Payload/
-          zip -r OjisanConverter-unsigned.ipa Payload
-          ls -lh OjisanConverter-unsigned.ipa
+          zip -r BannouAI-unsigned.ipa Payload
+          ls -lh BannouAI-unsigned.ipa
 
       - uses: actions/upload-artifact@v4
         with:
-          name: OjisanConverter-unsigned-ipa
-          path: ios/App/OjisanConverter-unsigned.ipa
+          name: BannouAI-unsigned-ipa
+          path: ios/App/BannouAI-unsigned.ipa
+
+      - name: Publish IPA to Release (直リンクDL用)
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ios-unsigned
+          name: "iOS unsigned IPA"
+          body: "Sideloadly / AltStore 用の署名なしIPA。無料Apple IDで署名して入れてください。7日ごとに再署名が必要です。"
+          allowUpdates: true
+          artifacts: "ios/App/BannouAI-unsigned.ipa"
+          token: ${{ secrets.GITHUB_TOKEN }}

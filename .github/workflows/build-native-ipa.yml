@@ -1,0 +1,65 @@
+name: Build Native IPA (unsigned for sideload)
+
+# SwiftUIネイティブ版。NativeApp/** の変更でIPAを作る
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "NativeApp/**"
+      - ".github/workflows/build-native-ipa.yml"
+
+jobs:
+  build-native-ipa:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer || true; xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: NativeApp
+        run: xcodegen generate
+
+      - name: Build unsigned .app
+        working-directory: NativeApp
+        run: |
+          xcodebuild \
+            -project Assistant.xcodeproj \
+            -scheme Assistant \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Package unsigned IPA
+        working-directory: NativeApp
+        run: |
+          rm -rf Payload Assistant-unsigned.ipa
+          mkdir Payload
+          cp -r build/Build/Products/Release-iphoneos/Assistant.app Payload/
+          zip -r Assistant-unsigned.ipa Payload
+          ls -lh Assistant-unsigned.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Assistant-unsigned-ipa
+          path: NativeApp/Assistant-unsigned.ipa
+
+      - name: Publish IPA to Release (直リンクDL用)
+        uses: ncipollo/release-action@v1
+        with:
+          tag: native-unsigned
+          name: "Native iOS unsigned IPA"
+          body: "SwiftUIネイティブ版の署名なしIPA。Sideloadly / AltStore で無料Apple ID署名して入れてください。7日ごとに再署名が必要です。Bundle ID: com.my.bannou.native"
+          allowUpdates: true
+          artifacts: "NativeApp/Assistant-unsigned.ipa"
+          token: ${{ secrets.GITHUB_TOKEN }}
