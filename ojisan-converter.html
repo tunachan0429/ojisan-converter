@@ -218,7 +218,7 @@ footer{margin:30px 0 40px;color:var(--muted);font-size:12.5px;text-align:center}
     </div>
   </section>
 
-  <section class="section" id="gemini">
+  <section class="section" id="gemini" style="display:none" hidden>
     <div class="card gemini">
       <h2>🤖 Gemini AI 高精度モード <span class="badge hot">おすすめ</span> <span class="status-dot" id="geminiDot"></span> <span id="geminiStatus" style="font-size:12px;color:var(--muted)">未接続（ローカル変換で動作中）</span></h2>
       <p class="desc">APIキーを入れると Google Gemini が文脈を読んで超自然なおじさん構文にするよぉ〜😍💕 キーはブラウザにだけ保存、外に送らないから安心してねぇ〜🙏✨ <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">APIキーの取得はこちら（無料）</a><br><span style="font-size:12px">※503で失敗したら自動で別モデルに逃がすよぉ〜💪 詳しくは <a href="https://aistudio.google.com/" target="_blank" rel="noopener">AI Studio</a> の割り当てを確認してねぇ〜🙏</span></p>
@@ -440,6 +440,17 @@ function buildGeminiPrompt(raw,o){
   return `あなたは「おじさん構文」のプロ翻訳家です。以下の普通の日本語メッセージを、気持ち悪いおじさん構文（おじさんLINE）に変換してください。\n\n【絶対ルール】\n- 絵文字を大量に使う（量レベル${o.emoji}/5。ハート❤️💕😍😘✨🌸☀️🍺🙏💦‼️などを文末・文中に自然に散りばめる）\n- 語尾は「〜だよぉ😘💕」「〜ねぇ〜✨」「〜かなぁ〜🥺💦」「〜ですよぉ🙏✨」のように伸ばす\n- 一人称は「${o.me}」、相手は「${o.target}」と呼ぶ\n- プリセットは「${preset.name}：${preset.desc}」、キモさ${o.kimo}/5、下心${o.shitago}/5\n- 含める要素：${[o.useAisatsu?'時間帯の挨拶＋天気の話':'',o.useHome?'褒め言葉':'',o.useKinkyo?'おじさんの近況報告':'',o.useOffer?'ご飯・お茶・ドライブのお誘い':'',o.useShime?'返信催促つき締めの言葉':''].filter(Boolean).join('、')}\n- ${o.useKaomoji?'顔文字 (^^♪ (^_^;) (≧▽≦) を使う':'顔文字は使わない'}\n- ${o.useKatakana?'「アリガトウ」「カワイイ」「ヨロシク」など一部カタカナ化する':'カタカナ化は控えめ'}\n- 元の用件（日時・依頼・謝罪など）は絶対に消さない。意味は変えない\n- 出力は変換後の文章のみ。解説・前置きは書かない\n\n【変換する文章】\n${raw}`;
 }
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+// ★埋め込みキー優先。欄は非表示なので表示には一切出さない
+function getGeminiKey(){
+  try{
+    if(typeof EMBEDDED_GEMINI_KEY!=='undefined'&&EMBEDDED_GEMINI_KEY) return EMBEDDED_GEMINI_KEY;
+  }catch(_){}
+  try{
+    const el=document.getElementById('geminiKey');
+    if(el&&el.value&&el.value.trim()) return el.value.trim();
+  }catch(_){}
+  try{return localStorage.getItem('ojisan_gemini_key')||'';}catch(_){return '';}
+}
 async function geminiFetchOnce(model,key,prompt){
   const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
   const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.9,maxOutputTokens:800}})});
@@ -463,9 +474,10 @@ function friendlyGeminiError(e){
   return String(e.message).slice(0,200);
 }
 async function geminiConvert(raw,o,onStep){
-  const key=document.getElementById('geminiKey').value.trim()||localStorage.getItem('ojisan_gemini_key')||'';
-  if(!key)throw new Error('APIキーがありません');
-  const first=document.getElementById('geminiModel').value;
+  const key=getGeminiKey();
+  if(!key){const e=new Error('key-missing');e.status=0;throw e;}
+  let first='gemini-2.5-flash';
+  try{first=document.getElementById('geminiModel').value||first;}catch(_){}
   // 選択モデル → 軽量 → 旧安定 の順で逃がす。preview系は混むので入れない
   const chain=[...new Set([first,'gemini-2.5-flash','gemini-2.0-flash-lite','gemini-2.0-flash','gemini-1.5-flash'])];
   const prompt=buildGeminiPrompt(raw,o);
@@ -590,23 +602,20 @@ function renderReport(text,o){
 
 async function doConvert(withGemini=true){
   const raw=$('input').value;const o=currentOpts();
-  const useGem=$('geminiUse').checked;
   const btn=$('btnConvert');
   if(btn.disabled) return;
   btn.disabled=true; btn.textContent='⏳ 変換中…';
   try{
-    if(withGemini&&useGem){
+    // キーの有無表示なし。キーあれば裏でGemini→ダメなら次モデル→全滅ならローカル
+    if(withGemini&&getGeminiKey()){
       try{
         const g=await geminiConvert(raw,o,(msg)=>{btn.textContent=msg;});
         $('results').innerHTML=resultCard('🤖 Gemini仕上げ','AI高精度',g,true)+resultCard('💪 ローカル案A','比較用',localConvert(raw,o,Date.now()%100000),false)+resultCard('💪 ローカル案B','比較用',localConvert(raw,o,(Date.now()%100000)+7),false);
-        renderReport(g,o);saveHist(raw,g);bumpTotal();toast('Geminiで仕上げたよぉ〜😍✨');
-        try{geminiState(true,'接続OKだよぉ〜😍💕');}catch(_){}
+        renderReport(g,o);saveHist(raw,g);bumpTotal();toast('仕上げたよぉ〜😍✨');
         return;
       }catch(e){
-        // 503/429は使いすぎじゃないよ、と明示する
-        toast('Geminiお休み中→ローカルで頑張るよぉ〜🥺💦 '+String(e.message).slice(0,120));
-        try{geminiState(false,String(e.message).slice(0,120));}catch(_){}
-        console.warn('[Gemini fallback]', e.status, e.cause||e);
+        // キーなし・混雑・制限いずれも表示を出さず黙ってローカルへ
+        console.warn('[auto-cycle fallback]', e.status, e.model||'', e.cause||e);
       }
     }
     const s1=Math.floor(Math.random()*1e9),s2=s1+101,s3=s1+202;
@@ -627,15 +636,22 @@ $('input').addEventListener('input',syncCount);
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')doConvert(true);});
 $('btnClearHist').onclick=()=>{history=[];localStorage.removeItem('ojisan_hist');renderHist();};
 $('targetName').addEventListener('input',()=>$('lineName').textContent=($('targetName').value||'ゆみちゃん')+' 💕');
-// Gemini保存・テスト（APIキー埋め込み済み）
+// Gemini設定（欄は非表示。キーはここに埋め込むだけ・表示なし）
 const EMBEDDED_GEMINI_KEY="";
-if(!localStorage.getItem('ojisan_gemini_key')&&EMBEDDED_GEMINI_KEY){localStorage.setItem('ojisan_gemini_key',EMBEDDED_GEMINI_KEY);}
-if(localStorage.getItem('ojisan_gemini_key')){$('geminiKey').value=localStorage.getItem('ojisan_gemini_key');}
-$('geminiUse').checked=!!localStorage.getItem('ojisan_gemini_key');
-function geminiState(ok,msg){$('geminiDot').className='status-dot '+(ok===null?'':ok?'ok':'err');$('geminiStatus').textContent=msg;}
-$('btnGeminiSave').onclick=()=>{localStorage.setItem('ojisan_gemini_key',$('geminiKey').value.trim());geminiState(true,'保存したよぉ〜😍💕 あとはチェックをONにしてねぇ〜✨');toast('保存したよぉ〜🙏✨');};
-$('btnGeminiTest').onclick=async()=>{geminiState(null,'テスト中…⏳');try{const t=await geminiConvert('こんにちは。元気ですか？',currentOpts(),(m)=>geminiState(null,m));geminiState(true,'接続OKだよぉ〜😍💕');toast('成功！ '+t.slice(0,30)+'…');}catch(e){geminiState(false,'失敗: '+String(e.message).slice(0,150));}};
-if(localStorage.getItem('ojisan_gemini_key'))geminiState(true,'埋め込みキーでGeminiモードONだよぉ〜😍✨');
+try{
+  if(!localStorage.getItem('ojisan_gemini_key')&&EMBEDDED_GEMINI_KEY){localStorage.setItem('ojisan_gemini_key',EMBEDDED_GEMINI_KEY);}
+  const _gk=document.getElementById('geminiKey');
+  if(_gk&&localStorage.getItem('ojisan_gemini_key')){_gk.value=localStorage.getItem('ojisan_gemini_key');}
+  const _gu=document.getElementById('geminiUse');
+  if(_gu){_gu.checked=!!getGeminiKey();}
+}catch(_){}
+function geminiState(ok,msg){try{const d=document.getElementById('geminiDot');if(d)d.className='status-dot '+(ok===null?'':ok?'ok':'err');}catch(_){}}
+try{
+  const _bs=document.getElementById('btnGeminiSave');
+  if(_bs)_bs.onclick=()=>{try{localStorage.setItem('ojisan_gemini_key',document.getElementById('geminiKey').value.trim());}catch(_){}};
+  const _bt=document.getElementById('btnGeminiTest');
+  if(_bt)_bt.onclick=async()=>{try{await geminiConvert('こんにちは。元気ですか？',currentOpts());}catch(e){console.warn(e);}};
+}catch(_){}
 
 /* 初期化 */
 renderPresets();renderEmojiPick();renderChips();syncLabels();syncCount();renderHist();

@@ -40,6 +40,15 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY=""
 
+      - name: Verify bundle identifier
+        working-directory: NativeApp
+        run: |
+          APP=$(ls -d build/Build/Products/Release-iphoneos/*.app | head -n 1)
+          echo "APP=$APP"
+          ls "$APP" | head -n 20
+          /usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$APP/Info.plist"
+          /usr/libexec/PlistBuddy -c "Print CFBundleDisplayName" "$APP/Info.plist" || true
+
       - name: Package unsigned IPA
         working-directory: NativeApp
         run: |
