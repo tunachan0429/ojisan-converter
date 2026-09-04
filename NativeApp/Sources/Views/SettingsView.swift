@@ -19,7 +19,7 @@ struct SettingsView: View {
                 Section("APIキー") {
                     SecureField("AIza…", text: Binding(
                         get: { settings.apiKey },
-                        set: { settings.apiKey = $0.trimmingCharacters(in: .whitespaces) }
+                        set: { settings.apiKey = $0 }
                     ))
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
@@ -36,6 +36,10 @@ struct SettingsView: View {
                         set: { settings.myCall = $0 }
                     ))
                     HStack {
+                        Button("保存") {
+                            settings.saveNow()
+                            keyMsg = "保存しました（\(settings.apiKey.count)文字）"
+                        }
                         Button("接続テスト") {
                             Task {
                                 keyMsg = "テスト中…"
@@ -44,7 +48,7 @@ struct SettingsView: View {
                                     keyMsg = "成功: \(r)"
                                 } catch {
                                     let detail = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                                    keyMsg = "失敗: \(String(detail.prefix(200)))"
+                                    keyMsg = "失敗: \(String(detail.prefix(200)))（入力\(settings.apiKey.count)文字）"
                                 }
                             }
                         }

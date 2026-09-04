@@ -30,7 +30,18 @@ final class SettingsStore {
         d.set(speed.rawValue, forKey: "bannou_speed")
     }
 
-    var hasKey: Bool { !apiKey.trimmingCharacters(in: .whitespaces).isEmpty }
+    var hasKey: Bool { !effectiveKey.isEmpty }
+
+    // 通信に使う鍵（前後の空白・改行を除去。入力欄自体は素直に保持する）
+    var effectiveKey: String {
+        apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    // 保存ボタン用：確定＋即時保存
+    func saveNow() {
+        apiKey = effectiveKey
+        save()
+    }
 
     var pillText: String {
         let base = speed == .fast ? "速い" : "高精度"
@@ -45,7 +56,7 @@ final class SettingsStore {
         let r = try await GeminiClient.generate(
             system: "あなたはテスト用アシスタント。「接続OK」とだけ返して。",
             userText: "接続テスト",
-            engine: .light, search: .off, apiKey: apiKey)
+            engine: .light, search: .off, apiKey: effectiveKey)
         return String(r.text.prefix(80))
     }
 }
@@ -174,7 +185,7 @@ final class ChatStore {
                 search: settings.searchMode,
                 summary: threads[i].summary,
                 callerName: settings.myCall,
-                apiKey: settings.apiKey)
+                apiKey: settings.effectiveKey)
             guard let j = threads.firstIndex(where: { $0.id == threadID }) else { return }
             let label = r.engineLabel + ((r.grounded && settings.searchMode != .off) ? "・検索" : "")
             threads[j].messages.append(ChatMessage(
@@ -207,7 +218,7 @@ final class ChatStore {
             let s = try await GeminiClient.generateLight(
                 system: "あなたは要約係。会話を200字以内で要点のみ要約。",
                 userText: "以下を要約:\n\(log)",
-                apiKey: settings.apiKey)
+                apiKey: settings.effectiveKey)
             guard let k = threads.firstIndex(where: { $0.id == threadID }) else { return }
             threads[k].summary = String(s.prefix(400))
             threads[k].summaryCount = threads[k].messages.count
