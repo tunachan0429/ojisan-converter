@@ -24,8 +24,6 @@ final class OjisanStore {
     var showFavoritesOnly = false
 
     // 設定
-    var apiKeyOverride: String = ""   // 空なら埋め込みキーを使う
-    var geminiModel: String = OjisanConfig.defaultModel
     var appearance: OjisanAppearance = .system
     var totalCount: Int = 0
 
@@ -60,12 +58,6 @@ final class OjisanStore {
         if let arr = d.stringArray(forKey: "ojisan_emoji_enabled"), !arr.isEmpty {
             options.emojiEnabled = arr
         }
-        apiKeyOverride = d.string(forKey: "ojisan_gemini_key") ?? ""
-        geminiModel = d.string(forKey: "ojisan_gemini_model") ?? OjisanConfig.defaultModel
-        // 廃止モデルが保存されていたら現行既定へ移行（確実に動くため）
-        if OjisanConfig.discontinuedModels.contains(geminiModel) || !OjisanConfig.geminiModels.contains(geminiModel) {
-            geminiModel = OjisanConfig.defaultModel
-        }
         if let ap = d.string(forKey: "ojisan_appearance"), let a = OjisanAppearance(rawValue: ap) {
             appearance = a
         }
@@ -96,8 +88,6 @@ final class OjisanStore {
         d.set(options.useBikuri, forKey: "ojisan_t_bikuri")
         d.set(options.useShime, forKey: "ojisan_t_shime")
         d.set(options.emojiEnabled, forKey: "ojisan_emoji_enabled")
-        d.set(apiKeyOverride, forKey: "ojisan_gemini_key")
-        d.set(geminiModel, forKey: "ojisan_gemini_model")
         d.set(appearance.rawValue, forKey: "ojisan_appearance")
         d.set(totalCount, forKey: "ojisan_total")
     }
@@ -106,21 +96,9 @@ final class OjisanStore {
         OjisanFileStore.save(history, name: "ojisan-history.json")
     }
 
-    // MARK: - APIキー解決（埋め込み優先・設定で上書き可）
+    // MARK: - APIキー（コード埋め込みのみ。UIには一切出さない）
     var effectiveKey: String {
-        let o = apiKeyOverride.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !o.isEmpty { return o }
-        return OjisanConfig.embeddedGeminiKey.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    var keyStatusText: String {
-        if !apiKeyOverride.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "設定キー使用中（\(effectiveKey.count)文字）"
-        }
-        if !OjisanConfig.embeddedGeminiKey.isEmpty {
-            return "埋め込みキー使用中（\(effectiveKey.count)文字）"
-        }
-        return "キー未設定（ローカル変換のみ）"
+        OjisanConfig.embeddedGeminiKey.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     // MARK: - プリセット
@@ -153,20 +131,21 @@ final class OjisanStore {
         let raw = input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "こんにちは。元気にしてる？" : input
         let o = options
 
-        // Gemini（キーあり・useGemini）→ 失敗したら黙ってローカルへ（HTML同等）
+        // Gemini（キーあり・useGemini）→ 失敗したら黙ってローカルへ
+        // 実機検証の結果ローカルが最もおじさんらしいため、本命は常にローカル。Geminiは2案目。
         if useGemini && !effectiveKey.isEmpty {
             do {
-                let g = try await OjisanGemini.convert(raw: raw, options: o, firstModel: geminiModel, key: effectiveKey)
+                let g = try await OjisanGemini.convert(raw: raw, options: o, firstModel: OjisanConfig.defaultModel, key: effectiveKey)
                 let baseSeed = UInt32.random(in: 0...1_000_000)
                 let a = OjisanEngine.localConvert(raw: raw, o: o, seed: baseSeed)
                 let b = OjisanEngine.localConvert(raw: raw, o: o, seed: baseSeed &+ 7)
                 results = [
-                    OjisanResult(title: "🤖 Gemini仕上げ", badge: "AI高精度", isHot: true, text: g),
-                    OjisanResult(title: "💪 ローカル案A", badge: "比較用", isHot: false, text: a),
-                    OjisanResult(title: "💪 ローカル案B", badge: "比較用", isHot: false, text: b),
+                    OjisanResult(title: "👑 本命", badge: "おすすめ", isHot: true, text: a),
+                    OjisanResult(title: "🤖 Gemini案", badge: "AI併用", isHot: false, text: g),
+                    OjisanResult(title: "🎲 バリエーション", badge: "別パターン", isHot: false, text: b),
                 ]
                 lastUsedGemini = true
-                afterConvert(raw: raw, main: g)
+                afterConvert(raw: raw, main: a)
                 showToast("仕上げたよぉ〜😍✨")
                 return
             } catch {
@@ -250,19 +229,5 @@ final class OjisanStore {
     // MARK: - トースト
     func showToast(_ msg: String) {
         toast = msg
-    }
-
-    // MARK: - テスト接続
-    func testConnection() async -> String {
-        do {
-            let r = try await OjisanGemini.fetchOnce(
-                model: geminiModel,
-                key: effectiveKey,
-                prompt: "「接続OK」とだけ返して。"
-            )
-            return "成功: \(String(r.prefix(80)))"
-        } catch {
-            return "失敗: \(OjisanGemini.friendly(error))"
-        }
     }
 }

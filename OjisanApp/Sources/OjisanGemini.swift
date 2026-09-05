@@ -47,7 +47,7 @@ enum OjisanGemini {
         req.timeoutInterval = 30
         let body: [String: Any] = [
             "contents": [["parts": [["text": prompt]]]],
-            "generationConfig": ["temperature": 0.9, "maxOutputTokens": 800]
+            "generationConfig": ["temperature": 0.9, "maxOutputTokens": 2000]
         ]
         req.httpBody = try JSONSerialization.data(withJSONObject: body)
         let data: Data

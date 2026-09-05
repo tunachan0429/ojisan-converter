@@ -133,21 +133,24 @@ struct ConvertView: View {
                 .pickerStyle(.menu)
             }
 
-            HStack(spacing: 8) {
-                Button("🗑 クリア") { store.input = ""; OjisanActions.haptic() }
+            VStack(spacing: 8) {
+                HStack(spacing: 8) {
+                    Button("🗑 クリア") { store.input = ""; OjisanActions.haptic() }
+                        .buttonStyle(GhostButtonStyle())
+                    Button("🎲 例文") {
+                        store.input = OjisanData.samples.randomElement() ?? ""
+                        OjisanActions.haptic()
+                    }
                     .buttonStyle(GhostButtonStyle())
-                Button("🎲 例文") {
-                    store.input = OjisanData.samples.randomElement() ?? ""
-                    OjisanActions.haptic()
+                    Button("📋 貼り付け") {
+                        if let t = UIPasteboard.general.string { store.input = t; store.showToast("貼ったよぉ〜😘💕") }
+                    }
+                    .buttonStyle(GhostButtonStyle())
+                    Spacer(minLength: 0)
                 }
-                .buttonStyle(GhostButtonStyle())
-                Button("📋 貼付") {
-                    if let t = UIPasteboard.general.string { store.input = t; store.showToast("貼ったよぉ〜😘💕") }
-                }
-                .buttonStyle(GhostButtonStyle())
-                Spacer()
                 Text("\(store.input.count)文字・\(store.input.components(separatedBy: .newlines).count)行")
                     .font(.caption).bold().foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
         .padding(16)
@@ -268,10 +271,10 @@ struct ConvertView: View {
                 .buttonStyle(GhostButtonStyle())
                 .disabled(store.isConverting)
                 Spacer()
-                Text(store.lastUsedGemini ? "🤖AI仕上げ" : "💪ローカル高速")
-                    .font(.caption).bold().foregroundStyle(.secondary)
+                Text(store.lastUsedGemini ? "🤖 AI併用" : "💪 ローカル")
+                    .font(.caption).bold().foregroundStyle(.secondary).lineLimit(1)
             }
-            Text("AI高精度モード内蔵だよぉ〜😍✨ そのままボタンでOK🙏💕")
+            Text("ローカル本命＋AI併用だよぉ〜😍✨ そのままボタンでOK🙏💕")
                 .font(.caption).foregroundStyle(.secondary)
         }
         .padding(16)

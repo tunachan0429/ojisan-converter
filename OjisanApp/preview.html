@@ -38,7 +38,7 @@ textarea{width:100%;min-height:90px;border:1.5px solid var(--line);border-radius
 .preset div.on{border-color:var(--accent);background:#fff0f2}
 [data-theme="dark"] .preset div.on{background:rgba(255,77,109,.15)}
 .btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:0;border-radius:999px;padding:12px;font-weight:800;width:100%;font-size:14px;margin-top:8px}
-.ghost{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:800}
+.ghost{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:800;white-space:nowrap;flex-shrink:0}
 .res{white-space:pre-wrap;font-size:13px;line-height:2;background:var(--bg);border-radius:12px;padding:10px;margin:8px 0}
 .badge{font-size:10px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:999px;padding:2px 8px}
 .badge2{font-size:10px;font-weight:800;background:rgba(127,127,127,.2);border-radius:999px;padding:2px 8px}
@@ -80,7 +80,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <div class="card"><h3>📝 変換したい文章</h3><p class="d">敬語でもタメ口でもOK</p>
         <textarea>お疲れ様。明日の会議は10時からです。資料を送りますね。よろしくお願いします。</textarea>
         <p class="d" style="margin-top:6px">相手: ゆみちゃん / 自分: おじさん / 挨拶: 自動</p>
-        <div class="row"><button class="ghost">🗑 クリア</button><button class="ghost">🎲 例文</button><button class="ghost">📋 貼付</button></div>
+        <div class="row"><button class="ghost">🗑 クリア</button><button class="ghost">🎲 例文</button><button class="ghost">📋 貼り付け</button></div>
+        <p class="d" style="text-align:right">20文字・1行</p>
       </div>
       <div class="card"><h3>⚙️ おじさん設定</h3><p class="d">プリセット＋微調整で精密制御😎✨</p>
         <div class="preset">
@@ -111,14 +112,13 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 返事待ってるねぇ〜😘❤️🙏✨💕</div>
         <div class="row"><button class="ghost">📋 コピー</button><button class="ghost">📤 共有</button><button class="ghost">𝕏 投稿</button><button class="ghost">💬 LINE</button><button class="ghost">🔊 読む</button></div>
       </div>
-      <div class="card"><h3>🎲 バリエーションB <span class="badge2">別パターン</span></h3>
-        <div class="res">お疲れ様〜🍺✨今日は暑いねぇ〜💦水分とってねぇ〜🙏💕
-ゆみちゃんってホント気が利くよねぇ〜✨🙏💕
-会議10時了解だよぉ〜😍❤️✨
-資料待ってるねぇ〜😘💕</div>
+      <div class="card"><h3>🤖 Gemini案 <span class="badge2">AI併用</span></h3>
+        <div class="res">ゆみちゃん、オハヨウ☀️🌸今朝もスッカリ良い天気☀️で気持がイイねぇ〜(^_^)
+明日の会議は10時からだよぉ〜😘💕資料はおじさんが送るねぇ〜🙏✨ヨロシクねぇ〜😘💕
+今度ご飯でもどうかなぁ〜🍖😍返事待ってるねぇ〜💌💕</div>
         <div class="row"><button class="ghost">📋 コピー</button><button class="ghost">📤 共有</button><button class="ghost">🔊 読む</button></div>
       </div>
-      <div class="card"><h3>🎲 バリエーションC <span class="badge2">別パターン</span></h3>
+      <div class="card"><h3>🎲 バリエーション <span class="badge2">別パターン</span></h3>
         <div class="res">こんばんは🌃✨今日も一日お疲れ様〜🍺😊💕
 写真見たけどホント綺麗だったよぉ〜🌸😍💓
 また連絡するねぇ〜💌💕✨</div>
@@ -153,11 +153,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     </div>
     <!-- ⑤設定 -->
     <div id="t4" class="hidden">
-      <div class="card"><h3>🤖 Gemini AI 高精度モード</h3><p class="d">埋め込みキー優先。空ならローカル変換💪</p>
-        <p class="d">状態: 埋め込みキー使用中（39文字）</p>
-        <p class="d">モデル: gemini-3.6-flash</p>
-        <div class="row"><button class="ghost">接続テスト</button><button class="ghost">キーの取得(無料)</button></div>
-      </div>
+      <div class="card"><h3>✨ AI内蔵</h3><p class="d">高精度変換は裏側で自動動作。設定は不要だよ。ローカル本命＋AI併用で必ず仕上がるよぉ〜💪😘</p></div>
       <div class="card"><h3>🎨 外観 ★今回追加</h3><p class="d">システム連動 / ライト / ダーク</p>
         <div class="row"><span class="badge">システム連動</span><span class="badge2">ライト</span><span class="badge2">ダーク</span></div>
       </div>

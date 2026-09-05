@@ -66,6 +66,7 @@ struct LevelBadge: View {
     var body: some View {
         Text(text)
             .font(.caption2).bold()
+            .lineLimit(1)
             .padding(.horizontal, 10).padding(.vertical, 3)
             .background(Color.primary.opacity(0.07))
             .clipShape(Capsule())
@@ -98,6 +99,8 @@ struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.headline)
+            .lineLimit(1)
+            .minimumScaleFactor(0.85)
             .foregroundStyle(.white)
             .padding(.horizontal, 26).padding(.vertical, 13)
             .background(OjisanTheme.accentGradient.opacity(isEnabled ? 1 : 0.5))
@@ -112,6 +115,8 @@ struct GhostButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.subheadline).bold()
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
             .padding(.horizontal, 14).padding(.vertical, 8)
             .background(scheme == .dark ? Color.white.opacity(0.08) : .white)
             .clipShape(Capsule())

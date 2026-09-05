@@ -1,49 +1,14 @@
 import SwiftUI
 
-// MARK: - ⑤設定タブ（API埋め込み表示＋外観＋例文＋使い方＋FAQ＋データ管理）
+// MARK: - ⑤設定タブ（外観＋例文＋使い方＋FAQ＋データ管理。APIの表示はなし）
 struct OjisanSettingsView: View {
     @Environment(OjisanStore.self) private var store
-    @State private var keyMsg = ""
     @State private var showWipe = false
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("🤖 Gemini AI 高精度モード") {
-                    Text("埋め込みキー優先。空なら下の欄・ローカル変換で動作するよぉ〜💪😘").font(.caption).foregroundStyle(.secondary)
-                    HStack {
-                        Text("状態").font(.caption).bold().foregroundStyle(.secondary)
-                        Spacer()
-                        Text(store.keyStatusText).font(.caption).bold()
-                    }
-                    SecureField("AIza…（上書き用・任意）", text: Binding(get: { store.apiKeyOverride }, set: { store.apiKeyOverride = $0; store.saveSettings() }))
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    Picker("モデル", selection: Binding(get: { store.geminiModel }, set: { store.geminiModel = $0; store.saveSettings() })) {
-                        ForEach(OjisanConfig.geminiModels, id: \.self) { m in Text(m).tag(m) }
-                    }
-                    HStack {
-                        Button("接続テスト") {
-                            Task {
-                                keyMsg = "テスト中…"
-                                keyMsg = await store.testConnection()
-                            }
-                        }
-                        .disabled(store.effectiveKey.isEmpty)
-                        Button("上書き削除", role: .destructive) {
-                            store.apiKeyOverride = ""
-                            store.saveSettings()
-                            keyMsg = ""
-                        }
-                    }
-                    if !keyMsg.isEmpty {
-                        Text(keyMsg).font(.caption).foregroundStyle(.secondary)
-                    }
-                    Link("キーの取得はこちら（無料）", destination: URL(string: OjisanConfig.keyDocURL)!)
-                        .font(.caption)
-                }
-
-                Section("🎨 外観（ダークモード対応：今回の追加機能）") {
+                Section("🎨 外観") {
                     Picker("テーマ", selection: Binding(get: { store.appearance }, set: { store.appearance = $0; store.saveSettings() })) {
                         ForEach(OjisanAppearance.allCases, id: \.self) { a in Text(a.label).tag(a) }
                     }
@@ -101,7 +66,7 @@ struct OjisanSettingsView: View {
                 }
 
                 Section("このアプリについて") {
-                    Text("オジサン翻訳機 🍺 ネタツール。SwiftUI完全ネイティブ・オフライン可。データはこのiPhoneにだけ保存。APIキーは埋め込み優先＋設定で上書き可。Bundle: \(OjisanConfig.bundleID)")
+                    Text("オジサン翻訳機 🍺 ネタツール。SwiftUI完全ネイティブ・オフライン可。データはこのiPhoneにだけ保存。")
                         .font(.caption).foregroundStyle(.secondary)
                 }
             }

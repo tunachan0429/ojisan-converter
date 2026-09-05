@@ -49,7 +49,7 @@ struct LinePreviewView: View {
                 HStack {
                     Text("🎭 \(store.options.activePreset)")
                     Spacer()
-                    Text(store.lastUsedGemini ? "🤖 Gemini仕上げ" : "💪 ローカル")
+                    Text(store.lastUsedGemini ? "🤖 AI併用" : "💪 ローカル")
                 }
                 .font(.caption2).bold().foregroundStyle(.secondary)
             } else {
