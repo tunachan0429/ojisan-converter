@@ -5,3 +5,7 @@ ios/App/build/
 ios/App/Pods/
 NativeApp/*.xcodeproj
 NativeApp/build/
+OjisanApp/*.xcodeproj
+OjisanApp/build/
+OjisanApp/*.ipa
+OjisanApp/Payload/

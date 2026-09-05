@@ -224,7 +224,7 @@ footer{margin:30px 0 40px;color:var(--muted);font-size:12.5px;text-align:center}
       <p class="desc">APIキーを入れると Google Gemini が文脈を読んで超自然なおじさん構文にするよぉ〜😍💕 キーはブラウザにだけ保存、外に送らないから安心してねぇ〜🙏✨ <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">APIキーの取得はこちら（無料）</a><br><span style="font-size:12px">※503で失敗したら自動で別モデルに逃がすよぉ〜💪 詳しくは <a href="https://aistudio.google.com/" target="_blank" rel="noopener">AI Studio</a> の割り当てを確認してねぇ〜🙏</span></p>
       <div class="row">
         <div class="field" style="flex:2"><label>Gemini APIキー（任意・なくても動くよぉ）</label><input id="geminiKey" type="password" placeholder="AIza...（貼ってねぇ〜💕）" value=""></div>
-        <div class="field"><label>モデル（安定版が503に強いよぉ）</label><select id="geminiModel"><option value="gemini-2.5-flash">gemini-2.5-flash（推奨・安定✨）</option><option value="gemini-2.0-flash">gemini-2.0-flash（安定🎵）</option><option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite（軽量・混雑に強い💪）</option><option value="gemini-1.5-flash">gemini-1.5-flash（旧安定🌱）</option></select></div>
+        <div class="field"><label>モデル（安定版が503に強いよぉ）</label><select id="geminiModel"><option value="gemini-3.6-flash">gemini-3.6-flash（推奨・安定✨）</option><option value="gemini-flash-latest">gemini-flash-latest（最新追従🎵）</option><option value="gemini-3.5-flash">gemini-3.5-flash（安定🎵）</option><option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite（軽量・混雑に強い💪）</option><option value="gemini-flash-lite-latest">gemini-flash-lite-latest（軽量最新🌱）</option></select></div>
       </div>
       <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center">
         <label class="switch"><input type="checkbox" id="geminiUse"> Geminiを使って変換する ✨</label>
@@ -476,10 +476,10 @@ function friendlyGeminiError(e){
 async function geminiConvert(raw,o,onStep){
   const key=getGeminiKey();
   if(!key){const e=new Error('key-missing');e.status=0;throw e;}
-  let first='gemini-2.5-flash';
+  let first='gemini-3.6-flash';
   try{first=document.getElementById('geminiModel').value||first;}catch(_){}
-  // 選択モデル → 軽量 → 旧安定 の順で逃がす。preview系は混むので入れない
-  const chain=[...new Set([first,'gemini-2.5-flash','gemini-2.0-flash-lite','gemini-2.0-flash','gemini-1.5-flash'])];
+  // 選択モデル → 現行安定の順で逃がす（2026-09実測: 旧2.x/1.5は新規ユーザーに404のため3.x系へ）
+  const chain=[...new Set([first,'gemini-3.6-flash','gemini-flash-latest','gemini-3.5-flash','gemini-3.5-flash-lite','gemini-flash-lite-latest'])];
   const prompt=buildGeminiPrompt(raw,o);
   let lastErr=null;
   for(const model of chain){

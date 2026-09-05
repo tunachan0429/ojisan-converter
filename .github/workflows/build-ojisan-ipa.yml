@@ -1,0 +1,91 @@
+name: Build Ojisan IPA (unsigned for sideload)
+
+# オジサン翻訳機 SwiftUIネイティブ版。OjisanApp/** の変更でIPAを作る
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "OjisanApp/**"
+      - ".github/workflows/build-ojisan-ipa.yml"
+
+jobs:
+  build-ojisan-ipa:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer || true; xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: OjisanApp
+        run: xcodegen generate
+
+      - name: Inject Gemini API key (Secret -> code, git history stays clean)
+        working-directory: OjisanApp
+        env:
+          OJISAN_GEMINI_KEY: ${{ secrets.OJISAN_GEMINI_KEY }}
+        run: |
+          if [ -z "$OJISAN_GEMINI_KEY" ]; then echo "no secret, local-only build"; exit 0; fi
+          python3 - <<'PYEOF'
+          import os, pathlib
+          key = os.environ["OJISAN_GEMINI_KEY"]
+          p = pathlib.Path("Sources/OjisanConfig.swift")
+          t = p.read_text()
+          old = 'static let embeddedGeminiKey: String = ""'
+          assert old in t, "placeholder not found"
+          p.write_text(t.replace(old, 'static let embeddedGeminiKey: String = "' + key + '"'))
+          print("injected embedded key")
+          PYEOF
+
+      - name: Build unsigned .app
+        working-directory: OjisanApp
+        run: |
+          xcodebuild \
+            -project Ojisan.xcodeproj \
+            -scheme Ojisan \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Verify bundle identifier
+        working-directory: OjisanApp
+        run: |
+          APP=$(ls -d build/Build/Products/Release-iphoneos/*.app | head -n 1)
+          echo "APP=$APP"
+          ls "$APP" | head -n 20
+          /usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$APP/Info.plist"
+          /usr/libexec/PlistBuddy -c "Print CFBundleDisplayName" "$APP/Info.plist" || true
+
+      - name: Package unsigned IPA
+        working-directory: OjisanApp
+        run: |
+          rm -rf Payload Ojisan-unsigned.ipa
+          mkdir Payload
+          cp -r build/Build/Products/Release-iphoneos/Ojisan.app Payload/
+          zip -r Ojisan-unsigned.ipa Payload
+          ls -lh Ojisan-unsigned.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ojisan-unsigned-ipa
+          path: OjisanApp/Ojisan-unsigned.ipa
+
+      - name: Publish IPA to Release (直リンクDL用)
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ojisan-unsigned
+          name: "Ojisan iOS unsigned IPA"
+          body: "オジサン翻訳機 SwiftUIネイティブ版の署名なしIPA。Sideloadly / AltStore で無料Apple ID署名して入れてください。7日ごとに再署名が必要です。Bundle ID: com.my.bannou.ojisan"
+          allowUpdates: true
+          artifacts: "OjisanApp/Ojisan-unsigned.ipa"
+          token: ${{ secrets.GITHUB_TOKEN }}

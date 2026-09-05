@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>オジサン翻訳機 Native版 プレビュー</title>
+<style>
+:root{
+  --bg:#f6f5f1; --card:#fff; --ink:#1a1a1e; --muted:#6b7280; --line:#ece9e2;
+  --accent:#ff4d6d; --accent2:#ff8a3d; --tab:#fff;
+}
+[data-theme="dark"]{
+  --bg:#121214; --card:#1e1e22; --ink:#f5f5f7; --muted:#9a9aa0; --line:#2e2e33; --tab:#1a1a1e;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#2b2b30;color:#fff;font-family:-apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:18px}
+.top{max-width:430px;text-align:center;margin-bottom:12px}
+.top h1{font-size:18px;margin:0 0 4px}
+.top p{font-size:12px;opacity:.7;margin:0 0 10px}
+.seg{display:inline-flex;background:#444;border-radius:999px;padding:3px}
+.seg button{border:0;border-radius:999px;padding:6px 14px;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:#fff}
+.seg button.on{background:#fff;color:#111}
+.phone{width:min(390px,100%);height:min(800px,82vh);background:var(--bg);color:var(--ink);border-radius:44px;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,.5);border:1px solid #555}
+.screen{background:var(--bg);color:var(--ink);border-radius:34px;overflow:hidden;height:100%;display:flex;flex-direction:column;position:relative}
+.notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:110px;height:26px;background:#000;border-radius:999px;z-index:5}
+.nav{padding:44px 16px 10px;font-weight:800;font-size:17px;text-align:center;border-bottom:1px solid var(--line);background:var(--card)}
+.body{flex:1;overflow-y:auto;padding:12px 12px 16px}
+.tabbar{display:flex;background:var(--tab);border-top:1px solid var(--line);padding:8px 4px calc(10px + env(safe-area-inset-bottom))}
+.tabbar button{flex:1;border:0;background:none;color:var(--muted);font-size:10px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tabbar button.on{color:var(--accent)}
+.tabbar span{font-size:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+.card h3{margin:0 0 4px;font-size:14px}
+.card p.d{margin:0 0 8px;font-size:11px;color:var(--muted)}
+textarea{width:100%;min-height:90px;border:1.5px solid var(--line);border-radius:12px;padding:10px;font-size:13px;font-family:inherit;background:var(--bg);color:var(--ink)}
+.preset{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.preset div{border:1.5px solid var(--line);border-radius:12px;padding:8px;font-size:12px;font-weight:800}
+.preset div.on{border-color:var(--accent);background:#fff0f2}
+[data-theme="dark"] .preset div.on{background:rgba(255,77,109,.15)}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:0;border-radius:999px;padding:12px;font-weight:800;width:100%;font-size:14px;margin-top:8px}
+.ghost{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:800}
+.res{white-space:pre-wrap;font-size:13px;line-height:2;background:var(--bg);border-radius:12px;padding:10px;margin:8px 0}
+.badge{font-size:10px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:999px;padding:2px 8px}
+.badge2{font-size:10px;font-weight:800;background:rgba(127,127,127,.2);border-radius:999px;padding:2px 8px}
+.line{background:#0f1419;border-radius:22px;padding:10px}
+.lhead{background:#2f3a45;color:#fff;font-size:12px;font-weight:800;padding:8px 12px;border-radius:14px 14px 0 0}
+.lbody{background:linear-gradient(#9ab4d3,#8fa9c9);padding:12px;border-radius:0 0 14px 14px;display:flex;flex-direction:column;gap:8px}
+.bub{background:#fff;color:#111;border-radius:12px 12px 12px 4px;padding:8px 10px;font-size:12px;line-height:1.8;max-width:88%}
+.bar{height:10px;background:rgba(127,127,127,.2);border-radius:999px;overflow:hidden}
+.fill{height:100%;width:92%;background:linear-gradient(90deg,#ffd166,var(--accent2),var(--accent));border-radius:999px}
+.hist{border:1px solid var(--line);border-radius:12px;padding:8px;margin-top:8px;font-size:12px}
+.search{background:rgba(127,127,127,.15);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--muted);margin-bottom:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.note{max-width:430px;font-size:12px;opacity:.8;margin-top:12px;line-height:1.8}
+.note code{background:#444;padding:1px 6px;border-radius:6px}
+.hidden{display:none}
+input[type=range]{width:100%;accent-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>🍺 オジサン翻訳機 Native版 — 仕上げプレビュー</h1>
+  <p>インストール前に5タブの見た目を確認できるよ。実機SwiftUIをHTMLで再現。</p>
+  <div class="seg">
+    <button id="bL" class="on" onclick="setTheme('light')">ライト</button>
+    <button id="bD" onclick="setTheme('dark')">ダーク</button>
+  </div>
+</div>
+
+<div class="phone"><div class="screen" id="screen" data-theme="light">
+  <div class="notch"></div>
+  <div class="nav" id="navTitle">変換 ✨</div>
+  <div class="body">
+    <!-- ①変換 -->
+    <div id="t0">
+      <div class="card"><h3>普通の文章を、クセ強おじさん構文に一発変換。</h3>
+        <p class="d">累計変換 128回 • 完全無料・登録不要</p>
+        <div class="row"><span class="badge2">6種 プリセット</span><span class="badge2">120+ 絵文字</span><span class="badge2">3案同時生成</span></div>
+      </div>
+      <div class="card"><h3>📝 変換したい文章</h3><p class="d">敬語でもタメ口でもOK</p>
+        <textarea>お疲れ様。明日の会議は10時からです。資料を送りますね。よろしくお願いします。</textarea>
+        <p class="d" style="margin-top:6px">相手: ゆみちゃん / 自分: おじさん / 挨拶: 自動</p>
+        <div class="row"><button class="ghost">🗑 クリア</button><button class="ghost">🎲 例文</button><button class="ghost">📋 貼付</button></div>
+      </div>
+      <div class="card"><h3>⚙️ おじさん設定</h3><p class="d">プリセット＋微調整で精密制御😎✨</p>
+        <div class="preset">
+          <div class="on">👑 王道おじさん<br><small style="color:var(--muted)">THE おじさん構文</small></div>
+          <div>☀️ 爽やかおじさん</div>
+          <div>💼 セクハラ上司</div>
+          <div>💰 パパ活おじさん</div>
+          <div>📻 昭和おじさん</div>
+          <div>🥺 泣き落とし</div>
+        </div>
+        <p class="d">キモさ Lv.4 かなりキモい😍</p><input type="range" value="4" min="1" max="5">
+        <p class="d">絵文字 Lv.4 盛り盛り💕</p><input type="range" value="4" min="1" max="5">
+        <p class="d">下心 Lv.2 ほのめかし🍺</p><input type="range" value="2" min="1" max="5">
+        <div class="row" style="margin-top:6px"><span class="badge2">挨拶☑</span><span class="badge2">褒め☑</span><span class="badge2">近況☑</span><span class="badge2">お誘い☑</span></div>
+        <button class="btn">✨ おじさん化する ✨</button>
+      </div>
+    </div>
+    <!-- ②結果 -->
+    <div id="t1" class="hidden">
+      <div class="card"><h3>👑 本命 <span class="badge">おすすめ</span></h3>
+        <div class="res">ヤッホー😍おはよう☀️✨💕今日もいい天気だねぇ〜☀️✨😘💕
+今日もゆみちゃんは可愛いねぇ〜😍💕
+オツカレサマですよぉ〜😘❤️😍✨💕
+明日の会議は10時からですよぉ〜😘💕✨
+資料を送りますよぉ〜💕😍🙏
+ヨロシクねぇ〜😘💕✨
+今度美味しいお肉食べに行こうよぉ〜🍖😍おじさんがおごっちゃうよぉ〜💕
+返事待ってるねぇ〜😘❤️🙏✨💕</div>
+        <div class="row"><button class="ghost">📋 コピー</button><button class="ghost">📤 共有</button><button class="ghost">𝕏 投稿</button><button class="ghost">💬 LINE</button><button class="ghost">🔊 読む</button></div>
+      </div>
+      <div class="card"><h3>🎲 バリエーションB <span class="badge2">別パターン</span></h3>
+        <div class="res">お疲れ様〜🍺✨今日は暑いねぇ〜💦水分とってねぇ〜🙏💕
+ゆみちゃんってホント気が利くよねぇ〜✨🙏💕
+会議10時了解だよぉ〜😍❤️✨
+資料待ってるねぇ〜😘💕</div>
+        <div class="row"><button class="ghost">📋 コピー</button><button class="ghost">📤 共有</button><button class="ghost">🔊 読む</button></div>
+      </div>
+      <div class="card"><h3>🎲 バリエーションC <span class="badge2">別パターン</span></h3>
+        <div class="res">こんばんは🌃✨今日も一日お疲れ様〜🍺😊💕
+写真見たけどホント綺麗だったよぉ〜🌸😍💓
+また連絡するねぇ〜💌💕✨</div>
+        <div class="row"><button class="ghost">📋 コピー</button><button class="ghost">📤 共有</button><button class="ghost">🔊 読む</button></div>
+      </div>
+    </div>
+    <!-- ③LINE -->
+    <div id="t2" class="hidden">
+      <div class="card"><h3>📊 キモさ分析レポート</h3>
+        <div style="font-size:26px;font-weight:800">92 <span style="font-size:13px">/ 100点・限界突破級 ‼️🤣💕</span></div>
+        <div class="bar"><div class="fill"></div></div>
+        <p class="d">❤️ 絵文字 28個 • (^^♪ 2個 • 📝 186文字</p>
+        <p class="d">完璧だよぉ〜😍💕このまま送ったらブロックされちゃうかもぉ〜(^_^;)💦</p>
+      </div>
+      <div class="line"><div class="lhead">＜ ゆみちゃん 💕</div>
+        <div class="lbody">
+          <div class="bub">ヤッホー😍おはよう☀️✨今日もいい天気だねぇ〜☀️✨</div>
+          <div class="bub">今日もゆみちゃんは可愛いねぇ〜😍💕</div>
+          <div class="bub">明日の会議は10時からですよぉ〜😘💕✨</div>
+        </div>
+      </div>
+    </div>
+    <!-- ④履歴 -->
+    <div id="t3" class="hidden">
+      <div class="card"><h3>🕒 履歴・お気に入り</h3><p class="d">無制限(上限500)・検索・⭐絞り込み ★今回追加</p>
+        <div class="search">🔍 履歴を検索（入力・結果）</div>
+        <div class="row"><span class="badge2">⭐ お気に入りのみ OFF</span><span class="badge2">3/3件</span></div>
+        <div class="hist">⭐ ヤッホー😍おはよう…<br><small style="color:var(--muted)">9/6 • 🎭 王道 • 📊 92点 • 元: お疲れ様。明日の会議は…</small></div>
+        <div class="hist">☆ お疲れ様〜🍺✨今日は暑いねぇ…<br><small style="color:var(--muted)">9/5 • 🎭 上司 • 📊 78点 • 元: 週末は空いてる？…</small></div>
+        <div class="hist">⭐ 誕生日おめでとう🎂素敵な一年に…<br><small style="color:var(--muted)">9/4 • 🎭 爽やか • 📊 45点 • 元: 誕生日おめでとう…</small></div>
+      </div>
+    </div>
+    <!-- ⑤設定 -->
+    <div id="t4" class="hidden">
+      <div class="card"><h3>🤖 Gemini AI 高精度モード</h3><p class="d">埋め込みキー優先。空ならローカル変換💪</p>
+        <p class="d">状態: 埋め込みキー使用中（39文字）</p>
+        <p class="d">モデル: gemini-3.6-flash</p>
+        <div class="row"><button class="ghost">接続テスト</button><button class="ghost">キーの取得(無料)</button></div>
+      </div>
+      <div class="card"><h3>🎨 外観 ★今回追加</h3><p class="d">システム連動 / ライト / ダーク</p>
+        <div class="row"><span class="badge">システム連動</span><span class="badge2">ライト</span><span class="badge2">ダーク</span></div>
+      </div>
+      <div class="card"><h3>📚 例文・使い方・FAQ</h3><p class="d">例文10種タップでセット / 使い方3ステップ / FAQ3件を収録。上のライト・ダーク切替で全タブの配色が変わるよ。</p></div>
+      <div class="card"><h3>📊 データ</h3><p class="d">累計変換 128回 • 履歴 3件 • データはiPhone内のみ保存</p></div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <button id="b0" class="on" onclick="tab(0)"><span>✨</span>変換</button>
+    <button id="b1" onclick="tab(1)"><span>📄</span>結果</button>
+    <button id="b2" onclick="tab(2)"><span>💬</span>LINE</button>
+    <button id="b3" onclick="tab(3)"><span>🕒</span>履歴</button>
+    <button id="b4" onclick="tab(4)"><span>⚙️</span>設定</button>
+  </div>
+</div></div>
+
+<div class="note">見方: 上の <code>ライト/ダーク</code> で配色、 下タブで5画面切替。実機はこれと同じSwiftUI TabViewになるよ。<br>開き方: <code>OjisanApp/preview.html</code> をダブルクリック。<br>このプレビューは見た目確認用で、変換ロジック自体は本物HTML <code>ojisan-converter.html</code> とSwiftエンジンで同一。</div>
+
+<script>
+const titles=["変換 ✨","結果 🎭","LINE 📊","履歴 🕒","設定 ⚙️"];
+function tab(n){
+  for(let i=0;i<5;i++){
+    document.getElementById('t'+i).classList.toggle('hidden',i!==n);
+    document.getElementById('b'+i).classList.toggle('on',i===n);
+  }
+  document.getElementById('navTitle').textContent=titles[n];
+}
+function setTheme(t){
+  document.getElementById('screen').dataset.theme=t;
+  document.querySelector('.phone').style.setProperty('--x',t);
+  document.documentElement.style.setProperty('--x',t);
+  // phone内のCSS変数を切替
+  const phone=document.querySelector('.phone');
+  const screen=document.getElementById('screen');
+  if(t==='dark'){screen.setAttribute('data-theme','dark');phone.style.filter='none';document.getElementById('bD').classList.add('on');document.getElementById('bL').classList.remove('on');}
+  else{screen.setAttribute('data-theme','dark');screen.setAttribute('data-theme','light');document.getElementById('bL').classList.add('on');document.getElementById('bD').classList.remove('on');}
+  // 実際は.phone配下の変数を上書き
+  phone.style.cssText += '';
+  applyTheme(t);
+}
+function applyTheme(t){
+  const s=document.getElementById('screen');
+  const dark=t==='dark';
+  const css=dark?
+   {'--bg':'#121214','--card':'#1e1e22','--ink':'#f5f5f7','--muted':'#9a9aa0','--line':'#2e2e33','--tab':'#1a1a1e'}:
+   {'--bg':'#f6f5f1','--card':'#fff','--ink':'#1a1a1e','--muted':'#6b7280','--line':'#ece9e2','--tab':'#fff'};
+  for(const k in css){s.style.setProperty(k,css[k]);document.querySelector('.phone').style.setProperty(k,css[k]);}
+}
+// 初期
+applyTheme('light');
+</script>
+</body>
+</html>
