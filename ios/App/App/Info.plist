@@ -45,5 +45,13 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>無音プレビューと写真・動画撮影のためカメラを使用します</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>動画撮影時の録音のためマイクを使用します</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>撮影した写真・動画の保存のため使用します</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>撮影ギャラリーの表示のため使用します</string>
 </dict>
 </plist>

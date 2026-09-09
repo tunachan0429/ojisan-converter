@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#000000">
+<title>LUX Camera</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--txt:#fff;--sub:#8e8e93;--acc:#ffd60a;--danger:#ff453a;--green:#30d158;--panel:#1c1c1e}
+html,body{margin:0;height:100%;background:#2c2c2e;color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Hiragino Sans",sans-serif;-webkit-font-smoothing:antialiased}
+body{display:flex;flex-direction:column;align-items:center;padding:0;background:#000;height:100dvh;overflow:hidden}
+.note{display:none}
+.note b{font-size:13px}.note code{background:#eee;border-radius:5px;padding:0 5px;font-size:11px}
+.phone{width:100vw;height:100dvh;background:#000;overflow:hidden;position:relative;border:0;border-radius:0;box-shadow:none}
+.notch{display:none}
+.app{position:absolute;inset:0;display:flex;flex-direction:column;background:#000}
+.statusbar{padding:calc(env(safe-area-inset-top, 47px)) 14px 6px;display:flex;align-items:center;justify-content:space-between;z-index:12}
+.fmt{font-size:11px;font-weight:800;letter-spacing:.07em;color:#fff;background:rgba(255,255,255,.13);padding:5px 9px;border-radius:7px;cursor:pointer;border:0;font-family:inherit}
+.fmt.raw{color:var(--danger)}
+.chev{font-size:12px;color:var(--sub);cursor:pointer;padding:6px 10px;letter-spacing:.08em;border:0;background:none;font-family:inherit}
+.ori{font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--sub);border:1px solid rgba(255,255,255,.2);padding:4px 9px;border-radius:7px;cursor:pointer;background:none;font-family:inherit}
+.ori.ls{color:var(--acc);border-color:rgba(255,214,10,.5)}
+.ev{font-size:11px;font-weight:600;color:var(--sub);font-variant-numeric:tabular-nums;min-width:60px;text-align:right}
+.quickbar{display:flex;gap:2px;overflow-x:auto;padding:2px 8px 6px;z-index:12;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent);scrollbar-width:none}
+.quickbar::-webkit-scrollbar{display:none}
+.q{flex:0 0 auto;min-width:50px;padding:7px 3px;text-align:center;cursor:pointer;border-radius:9px;border:0;background:transparent;color:#fff;font-family:inherit}
+.q small{display:block;font-size:8px;font-weight:800;letter-spacing:.07em;color:var(--sub);margin-top:3px}
+.q .ic{font-size:15px;line-height:1}
+.q.on{background:rgba(255,214,10,.12)}.q.on .ic,.q.on small{color:var(--acc)}
+.vf{position:relative;flex:1;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center}
+.frame{position:relative;overflow:hidden;background:#101014;max-width:100%;max-height:100%}
+.frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+.frame.demo::before{content:'';position:absolute;inset:0;background:radial-gradient(70% 45% at 50% 60%,#33333c 0%,#17171c 60%,#0a0a0c 100%)}
+.tag{position:absolute;top:8px;left:8px;font-size:9px;letter-spacing:.12em;color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.25);padding:3px 8px;border-radius:6px;z-index:6;background:rgba(0,0,0,.4)}
+.aperture-badge{position:absolute;bottom:8px;left:8px;font-size:10px;font-weight:800;letter-spacing:.06em;background:rgba(0,0,0,.6);padding:4px 9px;border-radius:7px;z-index:6;display:none}
+.aperture-badge.on{display:block}.aperture-badge b{color:var(--acc)}
+.grid{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:3}
+.grid.on{opacity:1}
+.grid.g3::before{content:'';position:absolute;left:33.3%;right:33.3%;top:0;bottom:0;border-left:.5px solid rgba(255,255,255,.4);border-right:.5px solid rgba(255,255,255,.4)}
+.grid.g3::after{content:'';position:absolute;top:33.3%;bottom:33.3%;left:0;right:0;border-top:.5px solid rgba(255,255,255,.4);border-bottom:.5px solid rgba(255,255,255,.4)}
+.grid.gsq::before{content:'';position:absolute;left:50%;top:0;bottom:0;border-left:.5px solid rgba(255,255,255,.4)}
+.grid.gsq::after{content:'';position:absolute;top:50%;left:0;right:0;border-top:.5px solid rgba(255,255,255,.4)}
+.grid.gdg::before{content:'';position:absolute;left:0;right:0;top:0;bottom:0;background:linear-gradient(45deg,transparent 49.8%,rgba(255,255,255,.3) 49.8% 50.2%,transparent 50.2%),linear-gradient(-45deg,transparent 49.8%,rgba(255,255,255,.3) 49.8% 50.2%,transparent 50.2%)}
+.afbox{position:absolute;width:76px;height:76px;border:1.5px solid var(--acc);border-radius:4px;display:none;z-index:5;pointer-events:none}
+.afbox::after{content:'AF';position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:800;color:var(--acc);background:rgba(0,0,0,.65);padding:2px 7px;border-radius:6px;letter-spacing:.08em}
+.aebox{position:absolute;width:56px;height:56px;border:1.5px solid #fff;border-radius:50%;display:none;z-index:5;pointer-events:none}
+.aebox::after{content:'AE';position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:800;color:#fff;background:rgba(0,0,0,.65);padding:2px 7px;border-radius:6px}
+.histo{position:absolute;top:8px;right:8px;width:88px;background:rgba(0,0,0,.6);border-radius:8px;padding:5px 6px;display:none;z-index:6}
+.histo.on{display:block}.histo canvas{width:100%;height:28px;display:block}.histo span{font-size:7px;letter-spacing:.1em;color:#fff}
+.wave{position:absolute;bottom:8px;right:8px;width:110px;background:rgba(0,0,0,.6);border-radius:8px;padding:5px 6px;display:none;z-index:6}
+.wave.on{display:block}.wave canvas{width:100%;height:40px;display:block}.wave span{font-size:7px;letter-spacing:.1em;color:#fff}
+.meters{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:none;gap:3px;z-index:6;background:rgba(0,0,0,.6);padding:5px 9px;border-radius:8px;align-items:flex-end}
+.meters.on{display:flex}.meters i{width:5px;background:var(--green);border-radius:2px;display:block;min-height:3px}
+.level{position:absolute;left:20px;right:20px;top:50%;z-index:4;pointer-events:none;display:none}
+.level.on{display:block}.level::before{content:'';position:absolute;left:0;right:0;height:.5px;background:rgba(255,255,255,.4)}
+.level i{position:absolute;left:50%;top:-9px;transform:translateX(-50%);font-size:9px;font-weight:800;background:rgba(0,0,0,.6);padding:2px 8px;border-radius:6px;font-style:normal;font-variant-numeric:tabular-nums}
+.level.ok i{color:var(--acc)}
+.zebra{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:3;background:repeating-linear-gradient(45deg,transparent 0 7px,rgba(255,69,58,.35) 7px 9px)}
+.zebra.on{opacity:1}
+.peak{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:3;box-shadow:inset 0 0 0 2px rgba(48,209,88,.0)}
+.peak.on{opacity:1;box-shadow:inset 0 0 0 1.5px rgba(48,209,88,.8)}
+.peak-tag{position:absolute;top:34px;left:8px;font-size:9px;font-weight:800;color:var(--green);background:rgba(0,0,0,.6);padding:3px 8px;border-radius:6px;display:none;z-index:6}
+.peak-tag.on{display:block}
+.grain{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:4;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><filter id="n"><feTurbulence baseFrequency="0.9"/></filter><rect width="120" height="120" filter="url(%23n)" opacity="0.5"/></svg>')}
+.qrbox{position:absolute;inset:18% 12%;border:1.5px solid var(--acc);border-radius:12px;display:none;z-index:7}
+.qrbox.on{display:block}.qrbox::after{content:'QRを枠内へ';position:absolute;bottom:-24px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--acc);white-space:nowrap}
+.ev-hud{position:absolute;left:50%;top:12%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:7px 14px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:.2s;pointer-events:none;z-index:8;font-variant-numeric:tabular-nums}
+.ev-hud.show{opacity:1}.ev-hud b{color:var(--acc)}
+.rec-dot{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:6px;background:rgba(0,0,0,.6);padding:5px 12px;border-radius:9px;font-size:12px;font-weight:800;z-index:8;font-variant-numeric:tabular-nums}
+.rec-dot.on{display:flex}.rec-dot i{width:9px;height:9px;border-radius:50%;background:var(--danger);animation:bl 1s infinite}@keyframes bl{50%{opacity:.3}}
+.flashfx{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:20}
+.flashfx.go{animation:fl .3s}@keyframes fl{15%{opacity:1}100%{opacity:0}}
+.bottom{background:#000;padding:4px 0 calc(10px + env(safe-area-inset-bottom));z-index:12}
+.pro-handle{text-align:center;font-size:10px;color:var(--sub);padding:5px;cursor:pointer;letter-spacing:.05em;border:0;background:none;width:100%;font-family:inherit}
+.pro{overflow:hidden;max-height:0;transition:max-height .25s;background:#0b0b0d;border-top:.5px solid rgba(255,255,255,.07)}
+.pro.open{max-height:210px;overflow-y:auto}
+.ptabs{display:flex;gap:4px;padding:8px 10px 0}
+.ptabs button{flex:1;border:0;background:transparent;color:var(--sub);font-size:11px;font-weight:800;padding:7px 2px;border-radius:8px;cursor:pointer;font-family:inherit;letter-spacing:.04em}
+.ptabs button.on{background:rgba(255,255,255,.1);color:#fff}
+.pro-ev{display:flex;align-items:center;gap:10px;padding:10px 14px 2px}
+.pro-ev span{font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--sub)}
+.pro-ev input{flex:1;accent-color:#fff}
+.pro-ev b{font-size:12px;min-width:46px;text-align:right;font-variant-numeric:tabular-nums}
+.prow{display:flex;gap:7px;padding:8px 12px;flex-wrap:wrap}
+.pcell{flex:1;min-width:70px;text-align:center;background:rgba(255,255,255,.06);border-radius:9px;padding:7px 4px;cursor:pointer;border:0;color:#fff;font-family:inherit}
+.pcell small{display:block;font-size:8px;letter-spacing:.09em;color:var(--sub);font-weight:800}
+.pcell b{font-size:12px;font-variant-numeric:tabular-nums}
+.pills{display:flex;gap:6px;padding:2px 12px 8px;flex-wrap:wrap}
+.pills button{border:.5px solid rgba(255,255,255,.2);background:transparent;color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:6px 12px;cursor:pointer;font-family:inherit}
+.pills button.on{background:#fff;color:#000;border-color:#fff}
+.pills button.warn.on{background:var(--acc);border-color:var(--acc);color:#000}
+.cap-toggle{display:flex;justify-content:center;margin:4px 0 5px}
+.seg{display:flex;background:var(--panel);border-radius:9px;padding:2px;width:230px}
+.seg button{flex:1;border:0;background:transparent;color:var(--sub);font-size:11px;font-weight:800;padding:6px 4px;border-radius:7px;cursor:pointer;font-family:inherit}
+.seg button.on{background:#2e2e32;color:#fff}
+.seg button.on i{color:var(--acc);font-style:normal;margin-right:3px}
+.lens{display:flex;justify-content:center;gap:8px;margin:3px 0}
+.lens button{width:37px;height:37px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit}
+.lens button.on{background:#fff;color:#000}
+.modes{display:flex;gap:15px;overflow-x:auto;padding:7px 18px;scrollbar-width:none}
+.modes::-webkit-scrollbar{display:none}
+.modes span{font-size:12.5px;color:var(--sub);white-space:nowrap;cursor:pointer;padding:2px;font-weight:500}
+.modes span.on{color:var(--acc);font-weight:800}
+.shutter-row{display:flex;align-items:center;justify-content:space-between;padding:7px 20px 2px}
+.shutter-row.lefty{flex-direction:row-reverse}
+.gal{width:46px;height:46px;border-radius:9px;background:#1c1c1e center/cover;border:.5px solid rgba(255,255,255,.15);cursor:pointer}
+.mid{display:flex;align-items:center;gap:12px}
+.afbtn{min-width:44px;height:30px;border-radius:8px;border:.5px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit}
+.afbtn.mf{color:var(--acc);border-color:rgba(255,214,10,.5)}
+.shutter{width:70px;height:70px;border-radius:50%;background:transparent;border:4px solid #fff;display:grid;place-items:center;cursor:pointer;padding:0}
+.shutter i{display:block;width:56px;height:56px;border-radius:50%;background:#fff;transition:.12s}
+.shutter:active i{transform:scale(.9)}
+.shutter.rec{border-color:var(--danger)}.shutter.rec i{background:var(--danger);border-radius:10px;width:34px;height:34px}
+.flip{width:46px;height:46px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:50;background:#1c1c1e;border-radius:14px 14px 0 0;padding:8px 16px 26px;transform:translateY(105%);transition:.26s;max-height:80%;overflow:auto}
+.sheet.open{transform:none}
+.grab{width:36px;height:5px;background:rgba(255,255,255,.3);border-radius:3px;margin:6px auto 10px}
+.sheet h3{margin:0 0 6px;font-size:15px}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:.5px solid rgba(255,255,255,.08);font-size:14px}
+.sw{width:50px;height:30px;border-radius:15px;background:#39393d;position:relative;cursor:pointer;border:0}
+.sw::after{content:'';position:absolute;top:2px;left:2px;width:26px;height:26px;background:#fff;border-radius:50%;transition:.2s}
+.sw.on{background:var(--green)}.sw.on::after{left:22px}
+.styles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.style{border-radius:10px;background:#2c2c2e;padding:10px;cursor:pointer;border:1.5px solid transparent}
+.style.on{border-color:var(--acc)}.style b{font-size:13px;display:block}.style small{font-size:11px;color:var(--sub)}
+.galgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px;max-height:220px;overflow:auto}
+.galgrid img,.galgrid video{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:#000;cursor:pointer}
+.exif{font-size:11.5px;color:#c7c7cc;background:#2c2c2e;border-radius:10px;padding:10px;margin-top:8px;line-height:1.7;white-space:pre-wrap}
+.toast{position:absolute;left:50%;bottom:250px;transform:translateX(-50%);background:rgba(20,20,22,.94);color:#fff;font-size:12px;padding:8px 14px;border-radius:10px;opacity:0;transition:.2s;z-index:60;white-space:nowrap;pointer-events:none;max-width:92%}
+.toast.show{opacity:1}
+.ctl{display:none}
+.boot{position:absolute;inset:0;z-index:100;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px;text-align:center}
+.boot h1{font-size:22px;margin:0;letter-spacing:.02em}
+.boot h1 span{color:var(--acc)}
+.boot p{font-size:13px;color:var(--sub);margin:0 0 8px;line-height:1.8}
+.boot button{border:0;border-radius:14px;background:var(--acc);color:#000;font-weight:800;font-size:16px;padding:15px 44px;cursor:pointer;font-family:inherit}
+.boot small{font-size:11px;color:var(--sub);line-height:1.8}
+.ctl button{flex:1;border:0;border-radius:11px;padding:12px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit}
+.b-p{background:var(--acc);color:#000}.b-g{background:#3a3a3c;color:#fff}
+.zen .statusbar,.zen .quickbar,.zen .bottom .cap-toggle,.zen .bottom .lens,.zen .bottom .modes,.zen .pro-handle,.zen .pro{display:none!important}
+.zen .notch{display:none}
+@media(max-width:440px){body{padding:0}.note{border-radius:0;margin:0}.phone{width:100vw;height:100dvh;border-radius:0;border:0}.ctl{padding:0 10px}}
+</style>
+</head>
+<body>
+<div class="note"><b>LUX Camera v4 — iPhone 15 Pro対応・縦持ち横撮り可</b><br>
+持った向きと別に<code>撮像:自動/縦で記録/横で記録</code>（Pro→撮り方）を選択可。縦持ちのまま横写真が撮れます。右上は持った向きの表示・手動切替。15 Pro用に .5/1×/2/3×（13/24/48/77mm）、12/48MP、ProRes/Logを追加。無音/高画質切替は維持。</div>
+<div class="phone"><div class="notch"></div><div class="app" id="app">
+<div class="statusbar"><button class="fmt" id="fmtBtn">HEIC</button><button class="chev" id="chev">﹀ QUICK</button><button class="ori" id="oriBtn">縦持ち</button><div class="ev" id="evTop">EV ±0.0</div></div>
+<div class="quickbar" id="quick">
+<button class="q" data-k="flash"><div class="ic">ϟ</div><small>FLASH</small></button>
+<button class="q" data-k="lowlight"><div class="ic">☾</div><small>LOW+</small></button>
+<button class="q" data-k="timer"><div class="ic">◷</div><small id="timerLbl">TIMER</small></button>
+<button class="q" data-k="ratio"><div class="ic">▭</div><small id="ratioLbl">4:3</small></button>
+<button class="q on" data-k="grid"><div class="ic">▦</div><small id="gridLbl">GRID</small></button>
+<button class="q on" data-k="histo"><div class="ic">◫</div><small>HIST</small></button>
+<button class="q" data-k="wave"><div class="ic">〜</div><small>WAVE</small></button>
+<button class="q on" data-k="level"><div class="ic">―</div><small>LEVEL</small></button>
+<button class="q" data-k="zebra"><div class="ic">▨</div><small>ZEBRA</small></button>
+<button class="q" data-k="peak"><div class="ic">◎</div><small>PEAK</small></button>
+<button class="q" data-k="style"><div class="ic">◍</div><small>LOOK</small></button>
+<button class="q" data-k="aperture"><div class="ic">⦿</div><small>f/2.0</small></button>
+<button class="q" data-k="qr"><div class="ic">▞</div><small>QR</small></button>
+<button class="q" data-k="zen"><div class="ic">◌</div><small>ZEN</small></button>
+<button class="q" data-k="left"><div class="ic">☰</div><small>LEFT</small></button>
+<button class="q" data-k="set"><div class="ic">⚙</div><small>SET</small></button>
+</div>
+<div class="vf" id="vf"><div class="frame demo" id="frame" style="aspect-ratio:3/4;width:100%;height:100%">
+<video id="vid" playsinline muted autoplay></video>
+<div class="tag" id="frameTag">4:3 ・ 縦</div>
+<div class="grid on g3" id="grid"></div>
+<div class="zebra" id="zebra"></div>
+<div class="peak" id="peak"></div><div class="peak-tag" id="peakTag">PEAKING ● MF</div>
+<div class="grain" id="grain"></div>
+<div class="level on" id="level"><i id="levelV">0.0°</i></div>
+<div class="histo on" id="histo"><canvas id="histoCv" width="76" height="28"></canvas><span>HISTOGRAM</span></div>
+<div class="wave" id="wave"><canvas id="waveCv" width="98" height="40"></canvas><span>WAVEFORM</span></div>
+<div class="meters" id="meters"><i style="height:8px"></i><i style="height:12px"></i><i style="height:6px"></i><i style="height:14px"></i><span style="font-size:9px;color:#fff">MIC</span></div>
+<div class="afbox" id="afbox"></div><div class="aebox" id="aebox"></div>
+<div class="aperture-badge" id="apBadge">Aperture <b>f/2.0</b> ・ Portrait</div>
+<div class="qrbox" id="qrbox"></div>
+<div class="ev-hud" id="evHud">露出 <b>±0.0</b></div>
+<div class="rec-dot" id="recDot"><i></i><span id="recTime">00:00</span></div>
+<div class="flashfx" id="flashfx"></div>
+</div></div>
+<div class="bottom">
+<button class="pro-handle" id="proHandle">··· プロ設定 ···</button>
+<div class="pro" id="pro">
+<div class="ptabs" id="ptabs"><button class="on" data-t="exp">露出</button><button data-t="col">深度・色</button><button data-t="vid">映像</button><button data-t="op">撮り方</button></div>
+<div id="tab-exp">
+<div class="pro-ev"><span>EXPOSURE</span><input type="range" id="ev" min="-2" max="2" step="0.1" value="0"><b id="evV">±0.0</b></div>
+<div class="pills" id="priRow"><button class="on" data-p="auto">AUTO</button><button data-p="s">S優先</button><button data-p="iso">ISO優先</button><button data-p="m">M</button></div>
+<div class="prow"><button class="pcell" id="cIso"><small>ISO</small><b id="isoV">AUTO</b></button><button class="pcell" id="cSs"><small>SHUTTER</small><b id="ssV">1/120</b></button><button class="pcell" id="cWb"><small>WB</small><b id="wbV">5200K</b></button><button class="pcell" id="cFocus"><small>FOCUS</small><b id="fV">AF</b></button></div>
+<div class="pills"><button id="bracketBtn">± bracketing 3枚</button><button id="hdrBtn">HDR Vivid</button><button id="lowBtn">LowLight+</button><button id="mpBtn">12MP</button></div>
+</div>
+<div id="tab-col" style="display:none">
+<div class="pro-ev"><span>APERTURE</span><input type="range" id="apRange" min="0" max="6" step="1" value="2"><b id="apV">f/2.0</b></div>
+<div class="pro-ev"><span>GRAIN</span><input type="range" id="grainR" min="0" max="100" value="0"><b id="grainV">0</b></div>
+<div class="pro-ev"><span>LOOK強度</span><input type="range" id="lookR" min="0" max="100" value="100"><b id="lookV">100%</b></div>
+<div class="pills"><button id="peakBtn2">ピーキング</button><button id="loupeBtn">フォーカスルーペ</button><button id="styleBtn2">Looksを開く</button></div>
+</div>
+<div id="tab-vid" style="display:none">
+<div class="pills" id="resRow"><button class="on">1080p</button><button>4K</button><button>720p</button></div>
+<div class="pills" id="fpsRow"><button>24</button><button class="on">30</button><button>60</button><button>120</button></div>
+<div class="pills"><button id="stabBtn" class="on">手ブレ補正</button><button id="micBtn">音声メーター</button><button id="tlBtn">TL 間隔:OFF</button><button id="proresBtn">ProRes</button><button id="logBtn">Log</button></div>
+</div>
+<div id="tab-op" style="display:none">
+<div class="pills"><button id="fsBtn">全画面シャッター</button><button id="volBtn" class="on">音量キー</button><button id="shakeBtn">静止待ち</button><button id="screenFlashBtn">自撮り flash</button></div>
+<div class="pills" id="capOriRow"><button class="on" data-c="auto">撮像:自動</button><button data-c="portrait">縦で記録</button><button data-c="landscape">横で記録</button></div>
+<div class="pills"><button id="leftBtn2">左利き配置</button><button id="zenBtn2">Zen隠す</button><button id="oriLockBtn">持方ロック</button><button id="burstBtn" class="on">長押し連写</button></div>
+</div>
+</div>
+<div class="cap-toggle"><div class="seg"><button id="bSilent" class="on"><i>●</i>無音</button><button id="bHq">高画質Pro</button></div></div>
+<div class="lens" id="lens"><button data-mm="13mm">.5</button><button class="on" data-mm="24mm">1×</button><button data-mm="48mm">2</button><button data-mm="77mm">3</button></div>
+<div class="modes" id="modes"><span data-m="photo" class="on">写真</span><span data-m="video">ビデオ</span><span data-m="port">ポートレート</span><span data-m="night">夜景</span><span data-m="macro">マクロ</span><span data-m="slow">スロー</span><span data-m="tl">タイムラプス</span><span data-m="doc">書類</span><span data-m="qr">QR</span></div>
+<div class="shutter-row" id="shRow"><div class="gal" id="galBtn"></div><div class="mid"><button class="afbtn" id="afBtn">AF</button><button class="shutter" id="shutter"><i></i></button></div><button class="flip" id="flip">⇄</button></div>
+</div>
+<div class="sheet" id="sheetStyle"><div class="grab"></div><h3>Leica式 Looks</h3><div class="styles" id="styleList"></div><div style="margin-top:10px"><button id="closeStyle" style="width:100%;border:0;border-radius:10px;padding:12px;font-weight:800">閉じる</button></div></div>
+<div class="sheet" id="sheetSet"><div class="grab"></div><h3>設定</h3>
+<div class="srow"><span>カメラロールに保存</span><button class="sw on" id="swSave"></button></div>
+<div class="srow"><span>位置情報を記録</span><button class="sw" id="swGps"></button></div>
+<div class="srow"><span>グリッド種類で水準器連動</span><button class="sw on" id="swLv"></button></div>
+<div style="margin-top:10px"><button id="closeSet" style="width:100%;border:0;border-radius:10px;padding:12px;font-weight:800;background:#ffd60a">閉じる</button></div></div>
+<div class="sheet" id="sheetGal"><div class="grab"></div><h3>ライブラリ <small id="galN" style="color:#8e8e93"></small></h3><div class="galgrid" id="galGrid"></div><div class="exif" id="exifBox" style="display:none"></div>
+<div style="display:flex;gap:8px;margin-top:10px"><button id="btnShare" style="flex:1;border:0;border-radius:10px;padding:12px;font-weight:800;background:#ffd60a">保存・共有</button><button id="closeGal" style="flex:1;border:0;border-radius:10px;padding:12px;font-weight:800;background:#2c2c2e;color:#fff">閉じる</button></div></div>
+<div class="boot" id="boot"><h1>LUX <span>Camera</span></h1><p>無音シャッター搭載プロカメラ<br>15 Pro 最適化 ・ 縦持ち横撮り対応</p><button id="bootBtn">カメラを開始</button><small>カメラ・マイク・写真保存の許可を求めます<br>無音モードは動画切出し方式で完全無音です</small></div>
+<div class="toast" id="toast"></div>
+</div></div>
+<div class="ctl"><button class="b-p" id="btnCam">カメラ開始</button><button class="b-g" id="btnOk">この方向でOK</button><button class="b-g" id="btnNg">修正</button></div>
+<script>
+const $=id=>document.getElementById(id);
+const vid=$('vid'),frame=$('frame'),vf=$('vf');
+const toastEl=$('toast');function toast(m){toastEl.textContent=m;toastEl.classList.add('show');clearTimeout(toastEl._t);toastEl._t=setTimeout(()=>toastEl.classList.remove('show'),1900)}
+function buzz(p){if(navigator.vibrate)try{navigator.vibrate(p||8)}catch(e){}}
+let stream=null,facing='environment',mode='photo',silent=true,shots=[],ev=0,mf=false,timer=0;
+let ratio='4:3',orientation='portrait',oriLock=false,capOri='auto',styleF='none',styleName='Zero',lookInt=100,grainV=0;
+let fmt='HEIC',pri='auto',bracket=false,hdr=false,low=false,stab=true,fsShoot=false,shakeWait=false,screenFlash=false;
+let fStops=['f/1.4','f/1.8','f/2.0','f/2.8','f/4','f/5.6','f/8'];let fi=2;
+let res='1080p',fps=30,tlGap=0,burstOn=true,micOn=false,rec=null,recC=[],isRec=false,recT0=0,recTimer=null;
+const ISOS=['AUTO','100','200','400','800','1600','3200'];let ii=0;
+const SSS=['1/1000','1/500','1/250','1/120','1/60','1/30','1/15','1/4','1s'];let si=3;
+const WBS=['3000K','4200K','5200K','5600K','6500K'];let wi=2;
+const GRIDS=['OFF','3分割','正方形','対角'];let gi=1;
+/* 縦横フレーム */
+const RATIOS=['4:3','16:9','1:1','3:2','5:4'];let ri=0;
+function effOri(){return capOri==='auto'?orientation:capOri}
+function frameAspect(){const r=RATIOS[ri];const m={'4:3':[4,3],'16:9':[16,9],'1:1':[1,1],'3:2':[3,2],'5:4':[5,4]}[r];if(effOri()==='portrait')return m[1]+'/'+m[0];return m[0]+'/'+m[1]}
+function updateFrame(){const a=frameAspect();frame.style.aspectRatio=a;
+ const vr=vf.getBoundingClientRect(),parts=a.split('/').map(Number),ar=parts[0]/parts[1],vrAr=vr.width/Math.max(1,vr.height);
+ if(ar>vrAr){frame.style.width='100%';frame.style.height='auto'}else{frame.style.height='100%';frame.style.width='auto'}
+ const eo=effOri(),locked=capOri!=='auto';
+ $('frameTag').textContent=RATIOS[ri]+' ・ '+(eo==='portrait'?'縦':'横')+'で記録'+(locked&&eo!==orientation?'（'+(orientation==='portrait'?'縦持ち':'横持ち')+'）':'');
+ $('ratioLbl').textContent=RATIOS[ri];
+ const ob=$('oriBtn');ob.textContent=(orientation==='portrait'?'縦持ち':'横持ち')+(locked?'・'+(eo==='portrait'?'縦記録':'横記録'):'');ob.classList.toggle('ls',eo==='landscape')}
+function autoOri(){if(oriLock)return;try{if(window.matchMedia&&matchMedia('(orientation: landscape)').matches)orientation='landscape';else if(window.innerWidth>window.innerHeight+120)orientation='landscape';else orientation='portrait'}catch(e){}updateFrame()}
+window.addEventListener('resize',()=>{autoOri()});if(window.matchMedia){try{matchMedia('(orientation: landscape)').addEventListener('change',autoOri)}catch(e){}}
+$('oriBtn').onclick=()=>{orientation=orientation==='portrait'?'landscape':'portrait';oriLock=false;$('oriLockBtn').classList.remove('on');updateFrame();toast(orientation==='portrait'?'縦長プレビュー':'横長プレビュー');buzz()};
+/* カメラ */
+async function startCamera(){try{if(stream)stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1920}},audio:true});vid.srcObject=stream;frame.classList.remove('demo');$('boot').style.display='none';toast('接続OK — 無音プレビュー');buzz(10);startMic()}catch(e){frame.classList.add('demo');toast('カメラを使えません — 設定で許可してください');$('boot').style.display='flex'}}
+$('btnCam').onclick=startCamera;$('bootBtn').onclick=startCamera;
+$('flip').onclick=()=>{facing=facing==='environment'?'user':'environment';if(facing==='user'&&screenFlash)toast('自撮りflash待機');$('btnCam').click()};
+/* Quick */
+document.querySelectorAll('#quick .q').forEach(b=>b.onclick=()=>{const k=b.dataset.k;
+ if(k==='set')return $('sheetSet').classList.add('open');
+ if(k==='style')return $('sheetStyle').classList.add('open');
+ if(k==='left')return toggleLeft();
+ if(k==='zen')return toggleZen();
+ if(k==='qr')return setMode('qr');
+ b.classList.toggle('on');const on=b.classList.contains('on');
+ if(k==='grid'){gi=(gi+1)%GRIDS.length;const g=$('grid');g.className='grid'+(gi===0?'':' on '+['','g3','gsq','gdg'][gi]);$('gridLbl').textContent=GRIDS[gi]==='OFF'?'GRID':GRIDS[gi];b.classList.toggle('on',gi>0)}
+ if(k==='histo')$('histo').classList.toggle('on',on);
+ if(k==='wave')$('wave').classList.toggle('on',on);
+ if(k==='level')$('level').classList.toggle('on',on);
+ if(k==='zebra')$('zebra').classList.toggle('on',on);
+ if(k==='peak'){const p=$('peak').classList.toggle('on',on);$('peakTag').classList.toggle('on',on);toast(on?'ピーキングON(MF推奨)':'ピーキングOFF')}
+ if(k==='flash'){toast(on?'フラッシュON':'フラッシュOFF');try{const p=stream?.getVideoTracks()[0]?.applyConstraints({advanced:[{torch:on}]});if(p&&p.catch)p.catch(()=>{})}catch(e){}}
+ if(k==='lowlight'){low=on;$('lowBtn').classList.toggle('on',on);applyLook();toast(on?'LowLight+ ON':'LowLight+ OFF')}
+ if(k==='timer'){timer=timer===0?3:timer===3?10:0;$('timerLbl').textContent=timer?timer+'S':'TIMER';b.classList.toggle('on',timer>0)}
+ if(k==='ratio'){ri=(ri+1)%RATIOS.length;updateFrame()}
+ if(k==='aperture'){setMode('port');toast('絞りは下のAPERTUREで f/1.4〜f/8')}
+ buzz()});
+$('chev').onclick=()=>{const q=$('quick');q.style.display=q.style.display==='none'?'flex':'none'};
+/* Looks */
+const STYLES=[{n:'Zero',d:'自然',f:'none'},{n:'Classic',d:'Leicaクラシック',f:'contrast(1.06) saturate(1.05) sepia(.12)'},{n:'Contemporary',d:'現代的鮮やか',f:'saturate(1.35) contrast(1.1)'},{n:'Mono',d:'白黒',f:'grayscale(1) contrast(1.1)'},{n:'Vivid',d:'ビビッド',f:'saturate(1.5) contrast(1.12)'},{n:'Warm',d:'暖フィルム',f:'sepia(.3) saturate(1.25)'},{n:'Cool',d:'寒色',f:'saturate(1.05) hue-rotate(12deg)'},{n:'Noir',d:'硬調白黒',f:'grayscale(1) contrast(1.32)'}];
+const sl=$('styleList');STYLES.forEach((s,i)=>{const d=document.createElement('div');d.className='style'+(i===0?' on':'');d.innerHTML='<b>'+s.n+'</b><small>'+s.d+'</small>';d.onclick=()=>{sl.querySelectorAll('.style').forEach(x=>x.classList.remove('on'));d.classList.add('on');styleF=s.f;styleName=s.n;applyLook();toast(s.n)};sl.appendChild(d)});
+function applyLook(){let f=styleF==='none'?'':styleF+' ';if(lookInt<100&&styleF!=='none')f+='opacity('+lookInt+'%) ';f+='brightness('+(1+ev*0.1+(low?0.22:0))+')';vid.style.filter=f;$('grain').style.opacity=grainV/220}
+$('closeStyle').onclick=()=>$('sheetStyle').classList.remove('open');
+$('closeSet').onclick=()=>$('sheetSet').classList.remove('open');
+[['swSave'],['swGps'],['swLv']].forEach(([id])=>$(id).onclick=e=>e.currentTarget.classList.toggle('on'));
+/* 無音/画質・形式 */
+function setSilent(v){silent=v;$('bSilent').classList.toggle('on',v);$('bHq').classList.toggle('on',!v);toast(v?'無音：動画切出し・完全無音':'高画質Pro：RAW対応・日本版は音が出ます');buzz(12)}
+$('bSilent').onclick=()=>setSilent(true);$('bHq').onclick=()=>setSilent(false);
+const FMTS=['HEIC','JPEG','RAW','ProRAW','TIFF'];let fmi=0;
+$('fmtBtn').onclick=e=>{fmi=(fmi+1)%FMTS.length;fmt=FMTS[fmi];e.currentTarget.textContent=fmt;e.currentTarget.classList.toggle('raw',fmt.includes('RAW'));if(fmt.includes('RAW')&&silent){setSilent(false);toast(fmt+'選択 → 高画質Proへ')}else toast('形式 '+fmt)};
+/* レンズ・モード */
+const LENS_MM={'.5':'13mm Ultra Wide','1×':'24mm Wide','2':'48mm 2x crop','3':'77mm Tele'};
+document.querySelectorAll('#lens button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#lens button').forEach(x=>x.classList.remove('on'));b.classList.add('on');buzz();toast('レンズ '+b.textContent+' '+(LENS_MM[b.textContent]||b.dataset.mm||''))});
+function setMode(m){mode=m;document.querySelectorAll('#modes span').forEach(x=>x.classList.toggle('on',x.dataset.m===m));
+ $('qrbox').classList.toggle('on',m==='qr');$('apBadge').classList.toggle('on',m==='port');
+ if(m==='qr')toast('QRを枠内へ');if(m==='port')toast('Aperture '+fStops[fi]+' ・ボケ量は下タブで');if(m==='doc')toast('書類：枠いっぱいに合わせて');if(m==='night')toast('夜景：LowLight+推奨');buzz()}
+document.querySelectorAll('#modes span').forEach(s=>s.onclick=()=>setMode(s.dataset.m));
+/* Proタブ */
+document.querySelectorAll('#ptabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#ptabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');['exp','col','vid','op'].forEach(t=>$('tab-'+t).style.display=t===b.dataset.t?'block':'none')});
+$('proHandle').onclick=()=>$('pro').classList.toggle('open');
+function setEv(v){ev=Math.max(-2,Math.min(2,v));$('ev').value=ev;const t=(ev>=0?'＋':'')+ev.toFixed(1);$('evV').textContent=t;$('evTop').textContent='EV '+t;applyLook();const h=$('evHud');h.innerHTML='露出 <b>'+t+'</b>';h.classList.add('show');clearTimeout(h._t);h._t=setTimeout(()=>h.classList.remove('show'),700)}
+$('ev').oninput=e=>setEv(parseFloat(e.target.value));
+document.querySelectorAll('#priRow button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#priRow button').forEach(x=>x.classList.remove('on'));b.classList.add('on');pri=b.dataset.p;toast('露出 '+b.textContent+(pri==='m'?'：ISOとSSを手動で':''))});
+$('cIso').onclick=()=>{ii=(ii+1)%ISOS.length;$('isoV').textContent=ISOS[ii];buzz(5)};
+$('cSs').onclick=()=>{si=(si+1)%SSS.length;$('ssV').textContent=SSS[si];buzz(5)};
+$('cWb').onclick=()=>{wi=(wi+1)%WBS.length;$('wbV').textContent=WBS[wi];buzz(5)};
+function setAF(a){mf=!a;$('afBtn').textContent=a?'AF':'MF';$('afBtn').classList.toggle('mf',!a);$('fV').textContent=a?'AF':'MF'}
+$('afBtn').onclick=()=>{setAF(mf);toast(mf?'オートフォーカス':'マニュアル（ルーぺ推奨）')};$('cFocus').onclick=()=>$('afBtn').click();
+$('bracketBtn').onclick=e=>{bracket=!bracket;e.currentTarget.classList.toggle('on',bracket);toast(bracket?'bracketing 3枚 (±1EV)':'bracketing OFF')};
+$('hdrBtn').onclick=e=>{hdr=!hdr;e.currentTarget.classList.toggle('on',hdr);toast(hdr?'HDR Vivid ON':'HDR OFF')};
+$('lowBtn').onclick=e=>{low=!low;e.currentTarget.classList.toggle('on',low);document.querySelector('[data-k="lowlight"]').classList.toggle('on',low);applyLook()};
+$('apRange').oninput=e=>{fi=parseInt(e.target.value);$('apV').textContent=fStops[fi];document.querySelector('[data-k="aperture"] small').textContent=fStops[fi];$('apBadge').innerHTML='Aperture <b>'+fStops[fi]+'</b> ・ Portrait';if(mode!=='port')setMode('port')};
+$('grainR').oninput=e=>{grainV=parseInt(e.target.value);$('grainV').textContent=grainV;applyLook()};
+$('lookR').oninput=e=>{lookInt=parseInt(e.target.value);$('lookV').textContent=lookInt+'%';applyLook()};
+$('peakBtn2').onclick=e=>{e.currentTarget.classList.toggle('on');const on=e.currentTarget.classList.contains('on');$('peak').classList.toggle('on',on);$('peakTag').classList.toggle('on',on);document.querySelector('[data-k="peak"]').classList.toggle('on',on)};
+$('loupeBtn').onclick=()=>toast('MF時にピンチでルーぺ表示（本番実装）');
+$('styleBtn2').onclick=()=>$('sheetStyle').classList.add('open');
+document.querySelectorAll('#resRow button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#resRow button').forEach(x=>x.classList.remove('on'));b.classList.add('on');res=b.textContent});
+document.querySelectorAll('#fpsRow button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#fpsRow button').forEach(x=>x.classList.remove('on'));b.classList.add('on');fps=parseInt(b.textContent);toast(fps+'fps'+(fps>=120?' スロー推奨':''))});
+$('stabBtn').onclick=e=>{stab=!stab;e.currentTarget.classList.toggle('on',stab)};
+$('micBtn').onclick=e=>{micOn=!micOn;e.currentTarget.classList.toggle('on',micOn);$('meters').classList.toggle('on',micOn)};
+$('tlBtn').onclick=e=>{const seq=[0,0.5,1,2,5];tlGap=seq[(seq.indexOf(tlGap)+1)%seq.length];e.currentTarget.textContent='TL 間隔:'+(tlGap?tlGap+'s':'OFF');if(tlGap&&mode!=='tl')setMode('tl')};
+$('fsBtn').onclick=e=>{fsShoot=!fsShoot;e.currentTarget.classList.toggle('on',fsShoot);toast(fsShoot?'ダブルタップで撮影ON':'OFF')};
+$('volBtn').onclick=e=>{e.currentTarget.classList.toggle('on')};
+$('shakeBtn').onclick=e=>{shakeWait=!shakeWait;e.currentTarget.classList.toggle('on',shakeWait);toast(shakeWait?'静止待ちON（ブレで待機）':'OFF')};
+$('screenFlashBtn').onclick=e=>{screenFlash=!screenFlash;e.currentTarget.classList.toggle('on',screenFlash)};
+$('burstBtn').onclick=e=>{burstOn=!burstOn;e.currentTarget.classList.toggle('on',burstOn)};
+function toggleLeft(){const r=$('shRow');r.classList.toggle('lefty');const on=r.classList.contains('lefty');document.querySelector('[data-k="left"]').classList.toggle('on',on);toast(on?'左利き配置':'右利き配置')}
+$('leftBtn2').onclick=toggleLeft;
+function toggleZen(){const a=$('app');a.classList.toggle('zen');const on=a.classList.contains('zen');document.querySelector('[data-k="zen"]').classList.toggle('on',on);toast(on?'Zen：タップで復帰':'Zen OFF');if(on)setTimeout(()=>{a.onclick=()=>{a.classList.remove('zen');a.onclick=null}},400)}
+$('zenBtn2').onclick=toggleZen;
+$('oriLockBtn').onclick=e=>{oriLock=!oriLock;e.currentTarget.classList.toggle('on',oriLock);toast(oriLock?'持方ロック中（持った向き固定）':'持方自動追従中')};
+document.querySelectorAll('#capOriRow button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#capOriRow button').forEach(x=>x.classList.remove('on'));b.classList.add('on');capOri=b.dataset.c;updateFrame();buzz();toast(capOri==='auto'?'撮像:持った向き通り':capOri==='portrait'?'縦で記録（縦持ち横撮り可の逆も可）':'横で記録（縦持ちでも横写真）')});
+let mp48=false;$('mpBtn').onclick=e=>{mp48=!mp48;e.currentTarget.textContent=mp48?'48MP':'12MP';e.currentTarget.classList.toggle('on',mp48);toast(mp48?'48MP ProRAW対応（15 Pro・本番）':'12MP 標準')};
+let prores=false;$('proresBtn').onclick=e=>{prores=!prores;e.currentTarget.classList.toggle('on',prores);toast(prores?'ProRes ON（15 Pro本番・試作は記録のみ）':'ProRes OFF')};
+let logOn=false;$('logBtn').onclick=e=>{logOn=!logOn;e.currentTarget.classList.toggle('on',logOn);if(logOn){styleF='contrast(.92) saturate(.7) brightness(1.05)';styleName='Log-flat'}applyLook();toast(logOn?'Apple Log風フラット':'Log OFF')};
+/* ファインダー操作：タップAF / 長押しAEロック / 上下露出 / Wタップ撮影 */
+let sy=null,pressT=null;
+vf.addEventListener('touchstart',e=>{sy=e.touches[0].clientY;pressT=setTimeout(()=>{const r=frame.getBoundingClientRect(),bx=$('aebox');bx.style.display='block';bx.style.left=(e.touches[0].clientX-r.left-28)+'px';bx.style.top=(e.touches[0].clientY-r.top-28)+'px';toast('AEロック');buzz(20)},600)},{passive:true});
+vf.addEventListener('touchend',()=>clearTimeout(pressT),{passive:true});
+vf.addEventListener('touchmove',e=>{if(sy==null)return;const dy=sy-e.touches[0].clientY;if(Math.abs(dy)>26){setEv(ev+dy/240);sy=e.touches[0].clientY}},{passive:true});
+frame.addEventListener('click',e=>{const r=frame.getBoundingClientRect(),box=$('afbox');box.style.display='block';box.style.left=(e.clientX-r.left-38)+'px';box.style.top=(e.clientY-r.top-38)+'px';buzz(6);clearTimeout(box._t);box._t=setTimeout(()=>box.style.display='none',1300)});
+frame.addEventListener('dblclick',()=>{if(fsShoot)snap(false)});
+document.addEventListener('keydown',e=>{if(e.key===' '){e.preventDefault();snap(false)}});
+/* 撮影 */
+let bursting=false,pressTimer=null,suppressClick=false;const sh=$('shutter');
+sh.addEventListener('pointerdown',()=>{suppressClick=false;if(!(burstOn&&mode==='photo'))return;clearTimeout(pressTimer);pressTimer=setTimeout(()=>{bursting=true;suppressClick=true;burst()},450)});
+window.addEventListener('pointerup',()=>{clearTimeout(pressTimer);bursting=false});
+async function burst(){if(!bursting)return;await snap(true);setTimeout(burst,520)}
+let tlActive=false,tlTimer=null;
+sh.onclick=()=>{if(suppressClick){suppressClick=false;return}if(mode==='video'){toggleRec();return}if(mode==='qr'){toast('QRモード中は撮影不可');return}
+ if(tlActive){tlActive=false;clearInterval(tlTimer);toast('TL停止');return}
+ const go=()=>{if(bracket){snap(false,-1);setTimeout(()=>snap(false,0),180);setTimeout(()=>snap(false,1),360)}else if(tlGap&&mode==='tl'){tlActive=true;toast('TL開始 '+tlGap+'s間隔（もう一度押で停止）');snap(false);tlTimer=setInterval(()=>{if(!tlActive){clearInterval(tlTimer);return}snap(false)},tlGap*1000);return}else snap(false)};
+ if(shakeWait){toast('静止待ち…');setTimeout(go,900)}else if(timer>0){toast(timer+'秒後…');setTimeout(go,timer*1000)}else go()};
+function cropToFrame(vw,vh){const a=frameAspect().split('/').map(Number),ta=a[0]/a[1],va=vw/vh;let sw,shh,sx,sy;if(va>ta){shh=vh;sw=vh*ta;sx=(vw-sw)/2;sy=0}else{sw=vw;shh=vw/ta;sx=0;sy=(vh-shh)/2}return[sx,sy,sw,shh]}
+async function snap(isBurst,evShift){evShift=evShift||0;
+ if(facing==='user'&&screenFlash){const f=$('flashfx');f.style.background='#fff';f.classList.remove('go');void f.offsetWidth;f.classList.add('go')}
+ const f=$('flashfx');f.classList.remove('go');void f.offsetWidth;f.classList.add('go');buzz(isBurst?5:12);
+ if(!silent){try{const c=new (window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);g.gain.value=0.028;o.frequency.value=2000;o.start();g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.1);o.stop(c.currentTime+.11)}catch(e){}}
+ const vw=vid.videoWidth||1200,vh=vid.videoHeight||900;const[sx,sy,sw,shh]=cropToFrame(vw,vh);
+ const c=document.createElement('canvas');c.width=Math.round(sw);c.height=Math.round(shh);const x=c.getContext('2d');
+ if(vid.videoWidth){x.filter=(vid.style.filter||'none').replace('none','');x.drawImage(vid,sx,sy,sw,shh,0,0,c.width,c.height);
+  if(mode==='port'){x.filter='blur('+(6-fi)+'px)';x.globalAlpha=.25;x.drawImage(vid,sx,sy,sw,shh,0,0,c.width,c.height);x.globalAlpha=1}
+ }else{x.fillStyle='#17171c';x.fillRect(0,0,c.width,c.height);x.fillStyle='#fff';x.font='600 44px sans-serif';x.textAlign='center';x.fillText(styleName+' '+RATIOS[ri]+' '+(effOri()==='portrait'?'縦':'横'),c.width/2,c.height/2);x.fillStyle='#8e8e93';x.font='28px sans-serif';x.fillText(new Date().toLocaleString('ja-JP'),c.width/2,c.height/2+52)}
+ const url=c.toDataURL('image/jpeg',silent?0.87:0.94);
+ shots.unshift({url,mode,fmt:fmt+(mp48?' 48MP':''),silent,ev:ev+evShift,iso:ISOS[ii],ss:SSS[si],wb:WBS[wi],f:mode==='port'?fStops[fi]:'—',look:styleName,ratio:RATIOS[ri],ori:effOri(),hold:orientation,time:new Date()});
+ renderGal();if(!isBurst)toast(silent?'無音で撮影（'+RATIOS[ri]+' '+(effOri()==='portrait'?'縦':'横')+'記録）':'高画質 '+fmt+' で撮影')}
+/* 録画 */
+function toggleRec(){if(!isRec){if(!stream||!window.MediaRecorder)return toast('先にカメラ開始');recC=[];try{rec=new MediaRecorder(stream)}catch(e){return toast('録画非対応')};rec.ondataavailable=e=>recC.push(e.data);rec.onstop=()=>{const b=new Blob(recC,{type:'video/webm'});shots.unshift({url:URL.createObjectURL(b),video:true,res,fps,prores,log:logOn,time:new Date()});renderGal()};rec.start();isRec=true;sh.classList.add('rec');$('recDot').classList.add('on');recT0=Date.now();recTimer=setInterval(()=>{const s=Math.floor((Date.now()-recT0)/1000);$('recTime').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')},500);toast('録画 '+res+' '+fps+'fps')}else{rec.stop();isRec=false;sh.classList.remove('rec');$('recDot').classList.remove('on');clearInterval(recTimer)}}
+/* ギャラリー+EXIF */
+let sel=0;
+function renderGal(){const lastPhoto=shots.find(s=>!s.video);$('galBtn').style.backgroundImage=lastPhoto?('url('+lastPhoto.url+')'):'';$('galN').textContent=shots.length?shots.length+'件':'';const g=$('galGrid');g.innerHTML='';shots.forEach((s,i)=>{let el;if(s.video){el=document.createElement('video');el.src=s.url;el.controls=true}else{el=document.createElement('img');el.src=s.url}el.onclick=()=>{sel=i;showExif()};g.appendChild(el)});if(shots[0])showExif()}
+function showExif(){const s=shots[sel];if(!s)return;const b=$('exifBox');b.style.display='block';
+ if(s.video){b.textContent='VIDEO ・ '+s.res+' '+s.fps+'fps'+(s.prores?' ・ ProRes':'')+(s.log?' ・ Log':'')+' ・ '+(s.time?s.time.toLocaleString('ja-JP'):'')}else{const holdTxt=s.hold&&s.hold!==s.ori?'（'+(s.hold==='portrait'?'縦持ち':'横持ち')+'）':'';b.textContent='ISO '+s.iso+' ・ SS '+s.ss+' ・ WB '+s.wb+' ・ 絞り '+s.f+'\nEV '+(s.ev>=0?'+':'')+Number(s.ev).toFixed(1)+' ・ '+s.fmt+' ・ '+s.look+' ・ '+s.ratio+' '+(s.ori==='portrait'?'縦記録':'横記録')+holdTxt+'\n'+s.time.toLocaleString('ja-JP')+(s.silent?' ・ 無音':' ・ 高画質')}}
+$('galBtn').onclick=()=>$('sheetGal').classList.add('open');$('closeGal').onclick=()=>$('sheetGal').classList.remove('open');
+$('btnShare').onclick=async()=>{if(!shots[sel])return toast('まだありません');try{if(navigator.share&&!shots[sel].video){const r=await fetch(shots[sel].url),b=await r.blob();await navigator.share({files:[new File([b],'lux.jpg',{type:'image/jpeg'})]})}else{const a=document.createElement('a');a.href=shots[sel].url;a.download='lux-'+Date.now()+(shots[sel].video?'.webm':'.jpg');a.click();toast('保存します')}}catch(e){}};
+/* モニタ */
+const hc=$('histoCv').getContext('2d');setInterval(()=>{hc.clearRect(0,0,76,28);hc.fillStyle='#fff';hc.beginPath();hc.moveTo(0,28);for(let x=0;x<=76;x+=3)hc.lineTo(x,28-(3+Math.random()*21*(1+ev*0.25)));hc.lineTo(76,28);hc.globalAlpha=.9;hc.fill();hc.globalAlpha=1},480);
+const wc=$('waveCv').getContext('2d');setInterval(()=>{if(!$('wave').classList.contains('on'))return;wc.clearRect(0,0,98,40);for(let x=0;x<98;x+=2){const h=6+Math.random()*30*(1+ev*0.2);wc.fillStyle=h>32?'#ffd60a':'#fff';wc.fillRect(x,40-h,1.5,h)}},300);
+setInterval(()=>{const d=Math.sin(Date.now()/1500)*1.6;$('levelV').textContent=d.toFixed(1)+'°';$('level').classList.toggle('ok',Math.abs(d)<0.5)},160);
+let audioCtx=null;function startMic(){if(!stream||audioCtx)return;try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();const src=audioCtx.createMediaStreamSource(stream);const an=audioCtx.createAnalyser();an.fftSize=256;src.connect(an);const buf=new Uint8Array(an.frequencyBinCount);setInterval(()=>{if(!micOn)return;an.getByteFrequencyData(buf);const bars=$('meters').querySelectorAll('i');bars.forEach((b,i)=>{const v=buf[i*8]||Math.random()*60;b.style.height=(4+v/8)+'px';b.style.background=v>180?'#ff453a':'#30d158'})},160)}catch(e){}}
+setInterval(()=>{if(micOn&&!audioCtx){const bars=$('meters').querySelectorAll('i');bars.forEach(b=>{b.style.height=(4+Math.random()*18)+'px'})}},300);
+/* QR簡易 */
+setInterval(async()=>{if(mode!=='qr'||!stream||!('BarcodeDetector' in window))return;try{const bd=new BarcodeDetector({formats:['qr_code']});const rs=await bd.detect(vid);if(rs&&rs[0]){toast('QR: '+String(rs[0].rawValue).slice(0,40));setMode('photo')}}catch(e){}},1500);
+$('btnOk').onclick=()=>toast('OK — この方向で本実装へ');
+$('btnNg').onclick=()=>{const m=prompt('どこを直す？');if(m)toast('受領: '+m.slice(0,28))};
+setEv(0);updateFrame();autoOri();setMode('photo');
+</script>
+</body>
+</html>
