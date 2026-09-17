@@ -52,8 +52,8 @@ jobs:
         working-directory: phonetransfer/app-shell/ios/App
         run: |
           xcodebuild \
-            -workspace App.xcworkspace \
-            -scheme App \
+            -project App.xcodeproj \
+            -target App \
             -configuration Release \
             -sdk iphoneos \
             -derivedDataPath build \
