@@ -47,9 +47,7 @@ jobs:
           grep -r "PhotosOriginal" ios/App/CapApp-SPM/Package.swift && echo "spm-linked" || echo "spm-link-missing"
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer || true; xcodebuild -version
-      - name: Install CocoaPods deps
-        working-directory: phonetransfer/app-shell/ios/App
-        run: pod install
+      # Capacitor 8はSPM構成のためPodfileなし。xcodebuildがSPM依存を自動解決する
       - name: Build unsigned .app
         working-directory: phonetransfer/app-shell/ios/App
         run: |
