@@ -1,0 +1,9 @@
+{
+  "appId": "com.phonetransfer.lan",
+  "appName": "PhoneTransfer",
+  "webDir": "../web",
+  "ios": {
+    "contentInset": "automatic",
+    "limitsNavigationsToAppBoundDomains": false
+  }
+}

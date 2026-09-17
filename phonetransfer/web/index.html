@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PhoneTransfer</title>
+<style>
+:root{--bg:#F2F2F7;--card:#fff;--ink:#111;--muted:#8E8E93;--line:rgba(60,60,67,.12);--accent:#007AFF;--ok:#34C759;--err:#FF3B30}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,system-ui,sans-serif;line-height:1.6}
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 40px}
+.card{background:var(--card);border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 .5px 0 rgba(60,60,67,.1)}
+h1{font-size:20px;margin:0 0 4px}h2{font-size:16px;margin:0 0 8px}p.desc{font-size:13px;color:var(--muted);margin:0 0 12px}
+label{font-size:13px;color:var(--muted);display:block;margin:10px 0 4px}
+input,select{width:100%;padding:10px 12px;font-size:16px;border:0;border-radius:10px;background:rgba(120,120,128,.12);font-family:inherit}
+.row{display:flex;gap:8px}.row>*{flex:1}
+button{border:0;border-radius:10px;padding:11px 16px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-p{background:var(--accent);color:#fff}.btn-g{background:rgba(120,120,128,.14)}.btn-p:disabled{opacity:.4}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;word-break:break-all;background:rgba(120,120,128,.1);border-radius:8px;padding:8px}
+.prog{height:8px;border-radius:4px;background:rgba(120,120,128,.15);overflow:hidden;margin-top:6px}
+.prog>i{display:block;height:100%;width:0;background:var(--accent)}
+.item{border-top:1px solid var(--line);padding:10px 0;font-size:14px}
+.item small{color:var(--muted)}.ok{color:var(--ok)}.err{color:var(--err)}
+#log{font-size:12px;white-space:pre-wrap;max-height:220px;overflow-y:auto}
+.hint{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>PhoneTransfer <span class="hint">v0.1 参照UI</span></h1>
+    <p class="desc">Windowsがお店、iPhoneがお客さん。同じWi-Fiで手渡しします。HTTPS必須・8MB分割・続きから再開対応。</p>
+    <div class="mono" id="srvInfo">未接続</div>
+  </div>
+
+  <div class="card">
+    <h2>1. 接続（初回だけPIN）</h2>
+    <label>サーバーURL（QRを読んだら自動入力）</label>
+    <input id="serverUrl" placeholder="https://192.168.0.6:8443">
+    <div class="row" style="margin-top:8px">
+      <div><label>PIN（6桁）</label><input id="pin" inputmode="numeric" maxlength="6" placeholder="123456"></div>
+      <div><label>デバイス名</label><input id="devName" value="iphone"></div>
+    </div>
+    <label>証明書指紋（QRのfpと一致必須・先頭8桁だけ目視）</label>
+    <input id="fpExpect" placeholder="1d8ec9db…（QRから自動）">
+    <div style="margin-top:10px" class="row">
+      <button class="btn-p" id="btnPair">接続する</button>
+      <button class="btn-g" id="btnFillQr">QR文字列から入力</button>
+    </div>
+    <p class="hint">ブラウザは自己署名で警告が出ます。「詳細設定→安全でないサイトに進む」で初回のみ許可（TOFU）。指紋が合わない時は絶対に進まないでください。</p>
+  </div>
+
+  <div class="card">
+    <h2>2. 送る（iPhone→Windows）</h2>
+    <p class="desc">写真・動画・zipを複数選択可。500件ずつprepare→3ファイル並列→各8MBずつ順番に送ります。</p>
+    <input type="file" id="filePick" multiple>
+    <div style="margin-top:8px"><button class="btn-p" id="btnSend" disabled>選択したファイルを送信</button></div>
+    <div id="upList"></div>
+  </div>
+
+  <div class="card">
+    <h2>3. 持ち帰る（Windows→iPhone）</h2>
+    <div class="row"><button class="btn-g" id="btnList">一覧を更新</button></div>
+    <div id="downList"></div>
+    <p class="hint">参照UIは単発ダウンロードです。レジューム付きRange取得はネイティブ版で対応します。</p>
+  </div>
+
+  <div class="card"><h2>ログ</h2><div id="log" class="mono"></div></div>
+</div>
+<script src="./app.js"></script>
+</body>
+</html>

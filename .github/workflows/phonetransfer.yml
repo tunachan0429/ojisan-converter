@@ -1,0 +1,76 @@
+name: PhoneTransfer CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "phonetransfer/**"
+      - ".github/workflows/phonetransfer.yml"
+
+jobs:
+  # 参照サーバーの統合試験（仕様の退行防止）
+  test-server:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: phonetransfer/server-node
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: phonetransfer/server-node/package-lock.json
+      - run: npm ci
+      - run: node integ.mjs
+
+  # iPhone側の署名なしIPA（Sideloadly/AltStore用・7日運用）
+  # 有料Apple Developerを用意したら TestFlight 用の署名ジョブを追加する
+  build-ios-unsigned:
+    runs-on: macos-latest
+    needs: test-server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install shell deps
+        working-directory: phonetransfer/app-shell
+        run: npm ci
+      - name: Sync web + plugins to iOS
+        working-directory: phonetransfer/app-shell
+        run: |
+          if [ ! -d ios ]; then npx cap add ios; fi
+          npx cap sync ios
+          # 自作プラグインはpodspec経由で自動リンクされる。確認:
+          grep -r "PhotosOriginal" ios/App/Podfile && echo "plugin-linked"
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer || true; xcodebuild -version
+      - name: Install CocoaPods deps
+        working-directory: phonetransfer/app-shell/ios/App
+        run: pod install
+      - name: Build unsigned .app
+        working-directory: phonetransfer/app-shell/ios/App
+        run: |
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+      - name: Package unsigned IPA
+        working-directory: phonetransfer/app-shell/ios/App
+        run: |
+          rm -rf Payload PhoneTransfer-unsigned.ipa
+          mkdir Payload
+          cp -r build/Build/Products/Release-iphoneos/App.app Payload/
+          zip -r PhoneTransfer-unsigned.ipa Payload
+          ls -lh PhoneTransfer-unsigned.ipa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PhoneTransfer-unsigned-ipa
+          path: phonetransfer/app-shell/ios/App/PhoneTransfer-unsigned.ipa

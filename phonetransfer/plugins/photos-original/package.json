@@ -1,0 +1,16 @@
+{
+  "name": "capacitor-plugin-photos-original",
+  "version": "0.1.0",
+  "description": "PhoneTransfer: photo-library originals + background chunk upload (iOS)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "capacitor": {
+    "ios": {
+      "src": "ios"
+    }
+  },
+  "files": [
+    "dist/",
+    "ios/"
+  ]
+}
