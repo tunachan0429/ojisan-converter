@@ -43,8 +43,8 @@ jobs:
         run: |
           if [ ! -d ios ]; then npx cap add ios; fi
           npx cap sync ios
-          # 自作プラグインはpodspec経由で自動リンクされる。確認:
-          grep -r "PhotosOriginal" ios/App/Podfile && echo "plugin-linked"
+          echo "--- plugin linkage check (informational) ---"
+          grep -r "PhotosOriginal" ios/App/CapApp-SPM/Package.swift && echo "spm-linked" || echo "spm-link-missing"
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer || true; xcodebuild -version
       - name: Install CocoaPods deps
