@@ -6,8 +6,8 @@ Pod::Spec.new do |s|
   s.homepage = 'https://example.local/phonetransfer'
   s.author = 'PhoneTransfer'
   s.source = { :git => 'https://example.local/phonetransfer.git', :tag => s.version.to_s }
-  s.platform = :ios, '14.0'
+  s.platform = :ios, '15.0'
   s.source_files = 'ios/Plugin/**/*.{swift,h,m,c,cc,mm,cpp}'
-  s.ios.deployment_target = '14.0'
+  s.ios.deployment_target = '15.0'
   s.dependency 'Capacitor'
 end

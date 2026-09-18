@@ -55,14 +55,13 @@ public class PhotosOriginalPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDelega
     @objc func pickAssets(_ call: CAPPluginCall) {
         ensureAuth {
             DispatchQueue.main.async {
-                var conf = PHPickerConfiguration(photoLibrary: .shared())
+                var conf = PHPickerConfiguration()
                 conf.selectionLimit = call.getInt("limit") ?? 100
                 if call.getBool("videos", false) {
                     conf.filter = .any(of: [.images, .livePhotos, .videos])
                 } else {
                     conf.filter = .any(of: [.images, .livePhotos])
                 }
-                conf.preferredAssetRepresentationMode = .current
                 let picker = PHPickerViewController(configuration: conf)
                 picker.delegate = self
                 self.bridge?.saveCall(call)
@@ -193,16 +192,14 @@ public class PhotosOriginalPlugin: CAPPlugin, CAPBridgedPlugin, URLSessionDelega
         }
     }
 
-    // MARK: TLSピンニング (URLSessionDelegate)
-    public func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge,
+    // MARK: TLSピンニング (タスク単位。bg upload / data / download 全てここを通る)
+    public func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge,
                            completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         guard challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
               let trust = challenge.protectionSpace.serverTrust else {
             completionHandler(.performDefaultHandling, nil); return
         }
-        let taskId = (challenge as? URLSessionTaskChallenge)?.taskIdentifier
-        var pinned = ""
-        if let id = taskId { fpLock.lock(); pinned = pinnedFpByTask[id] ?? ""; fpLock.unlock() }
+        fpLock.lock(); let pinned = pinnedFpByTask[task.taskIdentifier] ?? ""; fpLock.unlock()
         var fp = ""
         if let cert = SecTrustGetCertificateAtIndex(trust, 0) {
             let data = SecCertificateCopyData(cert) as Data
