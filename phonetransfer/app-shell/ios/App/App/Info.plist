@@ -70,5 +70,7 @@
 	<string>撮影した写真・動画の原本をWindowsへ転送するために使用します。</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Windowsから受け取った写真・動画を写真アプリに保存するために使用します。</string>
+	<key>NSCameraUsageDescription</key>
+	<string>PC画面のQRコードを読み取って接続するために使用します。</string>
 </dict>
 </plist>

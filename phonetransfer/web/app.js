@@ -40,6 +40,23 @@ $('btnFillQr').onclick = () => {
   const s = prompt('サーバー画面のQR下のURLを貼り付け');
   if (s) parseQrString(s);
 };
+// ネイティブ: カメラでQR読取（公式BarcodeScanner。Safariに飛ばない）
+const BCS = (NATIVE && CAPW.Plugins) ? CAPW.Plugins.BarcodeScanner : null;
+if (NATIVE && BCS) {
+  const sb = document.createElement('button');
+  sb.className = 'btn btn-p btn-block';
+  sb.style.marginTop = '8px';
+  sb.textContent = 'カメラでQRを読み取る';
+  sb.onclick = async () => {
+    try {
+      const r = await BCS.scanBarcode({ camera: 'back' });
+      const content = r && (r.ScanResult || r.content || r.value || '');
+      if (content) parseQrString(String(content));
+      else log('QR読取: キャンセルされました');
+    } catch (e) { log('QR読取失敗: ' + String(e.message || e).slice(0, 150)); }
+  };
+  $('btnFillQr').after(sb);
+}
 // ページ起動時にクエリからも復元
 (() => {
   try {
