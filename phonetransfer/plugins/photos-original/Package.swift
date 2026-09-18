@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "CapacitorPluginPhotosOriginal",
-    platforms: [.iOS(.14)],
+    platforms: [.iOS(.v14)],
     products: [
         .library(
             name: "CapacitorPluginPhotosOriginal",
