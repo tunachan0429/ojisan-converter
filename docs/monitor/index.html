@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dots Monitor — 自律AI 監視ダッシュボード</title>
+<meta name="description" content="Oracle無料VM上の自律AI(Dots互換)の操作・サーバー・AI状態を監視する静的ダッシュボード。GitHub Pages公開用。実データはAPI経由・トークン必須。">
+<style>
+:root{
+  --bg:#0b0f14; --panel:#121822; --panel2:#161e2b; --line:#223047;
+  --txt:#e6edf3; --muted:#8b98ab; --ok:#3fb950; --warn:#d29922; --bad:#f85149;
+  --accent:#58a6ff; --accent2:#a371f7; --radius:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;font-size:14px;line-height:1.6}
+a{color:var(--accent)}
+header{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.wrap{max-width:1180px;margin:0 auto;padding:14px 16px}
+.topbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.dot.deg{background:var(--warn);box-shadow:0 0 8px var(--warn)}
+.dot.down{background:var(--bad);box-shadow:0 0 8px var(--bad)}
+h1{font-size:17px;margin:0}
+.sub{color:var(--muted);font-size:12px}
+.tabs{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.tabs button{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;font-size:13px}
+.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#04121f;font-weight:700}
+.banner{margin:14px 0;padding:10px 12px;border:1px solid var(--line);border-left:4px solid var(--warn);background:#1a1607;border-radius:8px;font-size:12.5px;color:#f0d48a}
+.grid{display:grid;gap:12px}
+@media(min-width:900px){.g3{grid-template-columns:1fr 1fr 1fr}.g2{grid-template-columns:1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.card h2{font-size:13px;margin:0 0 10px;color:var(--muted);letter-spacing:.04em}
+.big{font-size:26px;font-weight:800}
+.muted{color:var(--muted)}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11.5px;border:1px solid var(--line);background:var(--panel2)}
+.b-ok{color:var(--ok);border-color:var(--ok)}.b-warn{color:var(--warn);border-color:var(--warn)}.b-bad{color:var(--bad);border-color:var(--bad)}.b-info{color:var(--accent);border-color:var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px}
+.btn{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12.5px;margin:2px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:#04121f;border-color:var(--accent);font-weight:700}
+.btn.danger{border-color:var(--bad);color:#ffb4ae}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{width:100%;background:#0d131d;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:13px}
+label{font-size:12px;color:var(--muted)}
+canvas.spark{width:100%;height:44px;display:block;background:#0d131d;border:1px solid var(--line);border-radius:8px}
+.timeline{border-left:2px solid var(--line);margin:6px 0 0 6px;padding-left:14px}
+.tl-item{margin:0 0 12px;position:relative}
+.tl-item::before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.tl-item.warn::before{background:var(--warn)}.tl-item.bad::before{background:var(--bad)}.tl-item.ok::before{background:var(--ok)}
+pre.logs{background:#070b11;border:1px solid var(--line);border-radius:8px;padding:10px;max-height:300px;overflow:auto;font-size:12px;white-space:pre-wrap}
+footer{color:var(--muted);font-size:12px;padding:24px 0 40px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px}
+.modal.open{display:flex}
+.modal .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;max-width:560px;width:100%;padding:18px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.spacer{flex:1}
+#toasts{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:8px;z-index:50}
+.toast{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--accent);padding:10px 12px;border-radius:8px;min-width:240px}
+</style>
+</head>
+<body>
+<header>
+<div class="wrap">
+<div class="topbar">
+<div id="healthDot" class="dot" title="backend health"></div>
+<div>
+<h1>Dots Monitor <span class="muted">/ 自律AI 監視ダッシュボード</span></h1>
+<div class="sub" id="healthLine">API未接続 — デモ表示中 · Oracle無料VM集約構成 · GitHub Pages静的公開</div>
+</div>
+<div class="spacer"></div>
+<button class="btn" id="btnSettings">接続設定</button>
+<button class="btn" id="btnRefresh">今すぐ更新</button>
+</div>
+<nav class="tabs" role="tablist">
+<button role="tab" aria-selected="true" data-tab="overview">① Overview</button>
+<button role="tab" aria-selected="false" data-tab="ops">② Operations 操作</button>
+<button role="tab" aria-selected="false" data-tab="server">③ Server 状態</button>
+<button role="tab" aria-selected="false" data-tab="ai">④ AI 状態・思考</button>
+</nav>
+</div>
+</header>
+
+<main class="wrap">
+<div class="banner">
+<b>公開メモ：</b>このページ自体はGitHub Pagesで公開してOKな作りです。実データは <code>APIベースURL＋トークン</code> が無いと出ません（トークンはlocalStorageのみ・リポジトリに含めない）。初期状態はデモデータ表示です。監視APIはTailscale内かBasic認証付きで運用してください。LINE Webhookの443だけ公開し、<code>:8080</code> 系は公開しないこと。
+</div>
+
+<!-- OVERVIEW -->
+<section id="tab-overview">
+<div class="grid g4" style="margin-bottom:12px">
+<div class="card"><h2>稼働エージェント</h2><div class="big" id="ovAgents">–</div><div class="muted" id="ovAgentsSub">working / stale</div></div>
+<div class="card"><h2>承認待ち</h2><div class="big" id="ovApprovals">–</div><div class="muted">PC削除・送信・表操作は必ずここ</div></div>
+<div class="card"><h2>LLM残量 (今日)</h2><div class="big" id="ovQuota">–</div><div class="muted" id="ovQuotaSub">Gemini 1500/日 · Groq 14400/日</div></div>
+<div class="card"><h2>サーバー負荷</h2><div class="big" id="ovLoad">–</div><div class="muted" id="ovLoadSub">CPU / MEM / DISK</div></div>
+</div>
+<div class="grid g2">
+<div class="card"><h2>エージェント状態カード</h2><div id="agentCards" class="grid"></div></div>
+<div class="card"><h2>同時稼働数（直近60分）</h2><canvas class="spark" id="sparkConcurrency" width="600" height="88"></canvas><div class="muted" style="margin-top:8px">LangGraph fan-out/fan-in の並列度。browser-use×2＋pc-taskの最大3想定。</div></div>
+</div>
+</section>
+
+<!-- OPS -->
+<section id="tab-ops" hidden>
+<div class="grid g2">
+<div class="card">
+<h2>タスク一覧（承認・停止・再開・リトライ）</h2>
+<table><thead><tr><th>ID/種別</th><th>内容</th><th>状態</th><th>操作</th></tr></thead><tbody id="taskRows"></tbody></table>
+</div>
+<div class="card">
+<h2>新規タスク投入（指示出し）</h2>
+<label>種別</label>
+<select id="newKind"><option value="browser">browser-use（Web調査・自動化）</option><option value="pc">pc-task（自宅PC整理・検索）</option><option value="research">proactive research（読み取り専用）</option></select>
+<label style="margin-top:8px;display:block">モデル</label>
+<select id="newModel">
+<option value="fast">会話用（Gemini Flash-Lite・軽量高速）</option>
+<option value="think">コーディング用（Qwen3 27B・推論）</option>
+<option value="deep">思考モード（DeepSeek蒸留70B・数学・難問）</option>
+</select>
+<label style="margin-top:8px;display:block">指示文</label>
+<textarea id="newText" rows="4" placeholder="例：Downloads直下のPDFを日付＋種類で振り分け提案して（実行は承認後）"></textarea>
+<div class="row" style="margin-top:8px"><button class="btn primary" id="btnEnqueue">キューに追加</button><span class="muted">PC宛は Dry-run→承認が必須</span></div>
+<hr style="border-color:var(--line)">
+<h2>Discord通知テスト</h2>
+<div class="row"><button class="btn" id="btnNotify">テスト通知を送る（backend経由）</button></div>
+<div class="muted">※ webhook URLはbackend側のみ保持。ブラウザに貼らない。</div>
+</div>
+</div>
+</section>
+
+<!-- SERVER -->
+<section id="tab-server" hidden>
+<div class="grid g3" style="margin-bottom:12px">
+<div class="card"><h2>CPU 使用率</h2><div class="big" id="svCpu">–</div><canvas class="spark" id="sparkCpu" width="600" height="88"></canvas></div>
+<div class="card"><h2>メモリ</h2><div class="big" id="svMem">–</div><canvas class="spark" id="sparkMem" width="600" height="88"></canvas></div>
+<div class="card"><h2>ディスク / boot 47GB</h2><div class="big" id="svDisk">–</div><div class="muted" id="svDiskSub">Object Storageへ日次退避</div></div>
+</div>
+<div class="grid g2">
+<div class="card"><h2>Dockerコンテナ別 (Beszel相当)</h2><table><thead><tr><th>container</th><th>CPU</th><th>MEM</th><th>状態</th></tr></thead><tbody id="containerRows"></tbody></table></div>
+<div class="card"><h2>死活 (Uptime Kuma相当)</h2><table><thead><tr><th>target</th><th>結果</th><th>応答</th></tr></thead><tbody id="uptimeRows"></tbody></table>
+<div class="muted">本番はUptime Kuma(20秒間隔)のDiscord通知と併用。ここは概要表示。</div></div>
+</div>
+<div class="card" style="margin-top:12px"><h2>ログ末尾100行</h2><pre class="logs" id="logBox">—</pre></div>
+</section>
+
+<!-- AI -->
+<section id="tab-ai" hidden>
+<div class="grid g2">
+<div class="card"><h2>LangGraph 実行タイムライン</h2><div class="timeline" id="timeline"></div></div>
+<div>
+<div class="card"><h2>トークン・コスト・記憶</h2><div id="aiStats"></div></div>
+<div class="card" style="margin-top:12px"><h2>思考トレース（要約）</h2><pre class="logs" id="thinkBox">—</pre></div>
+<div class="card" style="margin-top:12px"><h2>proactive research（読み取り専用ログ）</h2><pre class="logs" id="proBox">—</pre></div>
+</div>
+</div>
+</section>
+
+<footer>
+構成：Oracle A1 2OCPU/12GB集約 · LiteLLM(fast:Gemini / think:Qwen3,DeepSeek) · LangGraph並列 · browser-use×2 headless · pc-agentポーリング · faster-whisper＋Piper · Chroma＋SQLite · Beszel＋Uptime Kuma＋LangMonitor互換API · 通知はDiscord · <code>docs/monitor</code> をGitHub Pages公開
+</footer>
+</main>
+
+<div class="modal" id="settingsModal">
+<div class="box">
+<h3 style="margin:0 0 8px">接続設定（localStorageのみ保存）</h3>
+<label>APIベースURL（例：http://100.x.y.z:8080 または https://dots-api.example.com）</label>
+<input id="cfgBase" placeholder="未設定ならデモ表示">
+<label style="margin-top:8px;display:block">APIトークン（Bearer）</label>
+<input id="cfgToken" type="password" placeholder="リポジトリに書かない">
+<label style="margin-top:8px;display:block">更新間隔（秒）</label>
+<input id="cfgInterval" type="number" min="5" value="15">
+<div class="row" style="margin-top:12px">
+<button class="btn primary" id="btnSave">保存</button>
+<button class="btn" id="btnDemo">デモに戻す</button>
+<button class="btn" id="btnClose">閉じる</button>
+</div>
+<p class="muted">期待API：<code>GET /api/v1/overview /agents /tasks /server /containers /uptime /logs?tail=100 /ai/runs /ai/timeline /llm/quota</code>、<code>POST /api/v1/tasks /tasks/:id/approve /reject /runs/:id/kill|pause|resume|retry|rollback /notify/test</code>。CORS許可と <code>Authorization: Bearer</code> 必須。</p>
+</div>
+</div>
+<div id="toasts"></div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const store={get:(k,d)=>{try{const v=localStorage.getItem(k);return v??d}catch{return d}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch{}}};
+let CFG={base:store.get("dots.apiBase",""),token:store.get("dots.token",""),interval:parseInt(store.get("dots.interval","15"),10)||15};
+let DEMO=!CFG.base;
+
+// ---------- demo data (matches backend schema) ----------
+function demoData(){
+  const now=Date.now();
+  return {
+    overview:{agentsWorking:2,agentsStale:0,approvals:1,quotaUsedGemini:312,quotaTotalGemini:1500,quotaUsedGroq:1240,quotaTotalGroq:14400,cpu:23,mem:54,disk:61},
+    agents:[
+      {id:"browser-01",role:"browser-use",model:"gemini-2.5-flash-lite",status:"working",task:"為替ニュース3件要約→表抽出",mins:6},
+      {id:"browser-02",role:"browser-use",model:"groq/qwen3.6-27b",status:"working",task:"指定URL巡回・差分検知",mins:3},
+      {id:"pc-agent",role:"pc-task",model:"via-LiteLLM",status:"idle",task:"待機（Downloads提案済1件）",mins:0},
+      {id:"scheduler",role:"proactive",model:"read-only",status:"idle",task:"次回 09:00 定期チェック",mins:0}
+    ],
+    concurrency:[1,1,2,2,1,2,3,2,2,1,2,2],
+    tasks:[
+      {id:"T-1042",kind:"pc",title:"Downloads直下PDF 14件を日付＋種類で振り分け",status:"awaiting_approval",detail:"FROM ~/Downloads → ~/Archive/2026-10/ 移動14件・削除0・.bak保持"},
+      {id:"T-1041",kind:"browser",title:"為替＋日経朝刊ドラフト",status:"working",detail:"3/5サイト完了"},
+      {id:"T-1040",kind:"research",title:"旅行変更検知（読取のみ）",status:"done",detail:"変更なし"}
+    ],
+    containers:[
+      {name:"litellm",cpu:"2%",mem:"380MB",status:"up"},
+      {name:"orchestrator",cpu:"6%",mem:"720MB",status:"up"},
+      {name:"browser ×2",cpu:"14%",mem:"1.8GB",status:"up"},
+      {name:"dashboard",cpu:"1%",mem:"210MB",status:"up"},
+      {name:"voice",cpu:"0%",mem:"340MB",status:"idle"},
+      {name:"memory-chroma",cpu:"1%",mem:"410MB",status:"up"}
+    ],
+    uptime:[
+      {target:"GET /healthz",ok:true,ms:18},
+      {target:"POST LINE webhook :443",ok:true,ms:42},
+      {target:"LiteLLM :8000",ok:true,ms:11},
+      {target:"dashboard :8080",ok:true,ms:9}
+    ],
+    cpuHist:[18,21,19,24,23,26,22,23,21,24,23,22],
+    memHist:[51,52,53,54,54,55,54,54,53,54,54,54],
+    logs:`[${new Date().toISOString()}] orchestrator run T-1041 step 4/5 ok (1.2s)\n[${new Date().toISOString()}] browser-02 diff detected: 1 page changed\n[${new Date().toISOString()}] pc-agent poll ok, queue=1 awaiting_approval\n[${new Date().toISOString()}] litellm failover ready: gemini→groq→openrouter`,
+    timeline:[
+      {cls:"ok",t:"10:02:11",h:"browser-01 起動（fan-out）",d:"gemini-2.5-flash-lite / 5サイト巡回開始"},
+      {cls:"",t:"10:02:40",h:"browser-02 並列合流",d:"qwen3.6-27b / 差分セレクタ2種で取得"},
+      {cls:"warn",t:"10:03:02",h:"pc-agent 提案生成",d:"移動14件・削除0 — 承認待ち T-1042"},
+      {cls:"ok",t:"10:03:20",h:"research 読取のみ完了",d:"送信・書換なし（制限通り）"}
+    ],
+    aiStats:{tokensToday:"38,412",quota:"Gemini 312/1500 · Groq 1240/14400",memory:"Chroma 1,284件 / SQLite runs 312",cost:"¥0（無料枠内）"},
+    think:`browser-01: 要約は3文に圧縮、表は[日付,見出し,URL]のみ\nbrowser-02: セレクタBが404→Aに退避、再試行1で成功\npolicy: T-1042はL2（移動）のため自動実行せず承認キューへ`,
+    proactive:`09:00 scheduler armed\n- Gmail 未読 3件を件名のみ走査（本文取得なし）\n- カレンダー変更なし\n- 送信・書換 0件（read-only遵守）`
+  };
+}
+
+// ---------- fetch layer ----------
+async function api(path,opts={}){
+  if(DEMO) return null;
+  const res=await fetch(CFG.base.replace(/\/$/,"")+path,{
+    ...opts,
+    headers:{...(opts.headers||{}),...(CFG.token?{Authorization:"Bearer "+CFG.token}:{}),"Content-Type":"application/json"}
+  });
+  if(!res.ok) throw new Error("API "+res.status);
+  return res.json();
+}
+async function post(path,body={}){
+  if(DEMO){toast("デモ中のため送信しません（API未接続）");return {demo:true}}
+  return api(path,{method:"POST",body:JSON.stringify(body)});
+}
+function toast(msg){
+  const el=document.createElement("div");el.className="toast";el.textContent=msg;
+  $("#toasts").appendChild(el);setTimeout(()=>el.remove(),3800);
+}
+function spark(id,data,color){
+  const c=$(id);if(!c) return;const x=c.getContext("2d");
+  const W=c.width,H=c.height;x.clearRect(0,0,W,H);
+  const max=Math.max(...data,1),min=Math.min(...data,0);
+  x.strokeStyle=color||"#58a6ff";x.lineWidth=2;x.beginPath();
+  data.forEach((v,i)=>{const px=i/(data.length-1)*W;const py=H-6-((v-min)/(max-min||1))*(H-14);i?x.lineTo(px,py):x.moveTo(px,py)});
+  x.stroke();
+}
+function badge(s){
+  const m={working:["作業中","b-info"],idle:["待機",""],awaiting_approval:["承認待ち","b-warn"],done:["完了","b-ok"],failed:["失敗","b-bad"],paused:["停止中","b-warn"],up:["up","b-ok"]};
+  const v=m[s]||[s,""];return `<span class="badge ${v[1]}">${v[0]}</span>`;
+}
+
+// ---------- render ----------
+let D=demoData();
+async function load(){
+  try{
+    if(!DEMO){
+      const [ov,ag,tk,sv,ct,up,lg,tl]=await Promise.all([
+        api("/api/v1/overview"),api("/api/v1/agents"),api("/api/v1/tasks"),
+        api("/api/v1/server"),api("/api/v1/containers"),api("/api/v1/uptime"),
+        api("/api/v1/logs?tail=100"),api("/api/v1/ai/timeline")
+      ]);
+      D={overview:ov,agents:ag.agents||ag,tasks:tk.tasks||tk,containers:ct.containers||ct,uptime:up.checks||up,
+        cpuHist:sv.cpuHist||D.cpuHist,memHist:sv.memHist||D.memHist,logs:typeof lg==="string"?lg:(lg.logs||D.logs),
+        timeline:tl.timeline||D.timeline,concurrency:sv.concurrency||D.concurrency,
+        aiStats:tl.stats||D.aiStats,think:tl.think||D.think,proactive:tl.proactive||D.proactive};
+      $("#healthDot").className="dot";$("#healthLine").textContent="API接続OK · "+CFG.base+" · "+new Date().toLocaleString();
+    }else{
+      D=demoData();
+      $("#healthDot").className="dot deg";$("#healthLine").textContent="API未接続 — デモ表示中 · 右上「接続設定」からOracle VMのURL＋トークンを入力";
+    }
+  }catch(e){
+    $("#healthDot").className="dot down";$("#healthLine").textContent="API接続失敗："+e.message+"（デモ継続）";
+  }
+  render();
+}
+function render(){
+  const o=D.overview;
+  $("#ovAgents").textContent=(o.agentsWorking??"–")+" 稼働";
+  $("#ovAgentsSub").textContent=`stale ${o.agentsStale??0} · 並列上限3`;
+  $("#ovApprovals").textContent=o.approvals??"–";
+  $("#ovQuota").textContent=`Gemini ${o.quotaUsedGemini}/${o.quotaTotalGemini}`;
+  $("#ovQuotaSub").textContent=`Groq ${o.quotaUsedGroq}/${o.quotaTotalGroq} · 枯渇時は自動退避`;
+  $("#ovLoad").textContent=`CPU ${o.cpu}%`;
+  $("#ovLoadSub").textContent=`MEM ${o.mem}% / DISK ${o.disk}%`;
+  $("#agentCards").innerHTML=D.agents.map(a=>`<div class="card" style="background:var(--panel2)"><div class="row"><b>${a.id}</b><span class="spacer"></span>${badge(a.status)}</div><div class="muted">${a.role} · ${a.model}</div><div style="margin-top:6px">${a.task}</div><div class="muted">作業 ${a.mins}分</div></div>`).join("");
+  spark("#sparkConcurrency",D.concurrency,"#a371f7");
+  $("#taskRows").innerHTML=D.tasks.map(t=>`<tr><td><b>${t.id}</b><br><span class="muted">${t.kind}${t.model?` · ${t.model}`:""}</span></td><td>${t.title}<br><span class="muted">${t.detail||""}</span></td><td>${badge(t.status)}</td><td>
+    <button class="btn" data-act="approve" data-id="${t.id}">承認</button><button class="btn" data-act="reject" data-id="${t.id}">却下</button><button class="btn" data-act="retry" data-id="${t.id}">リトライ</button><button class="btn danger" data-act="kill" data-id="${t.id}">停止</button>
+  </td></tr>`).join("");
+  $("#svCpu").textContent=o.cpu+"%";$("#svMem").textContent=o.mem+"%";$("#svDisk").textContent=o.disk+"%";
+  spark("#sparkCpu",D.cpuHist,"#3fb950");spark("#sparkMem",D.memHist,"#58a6ff");
+  $("#containerRows").innerHTML=D.containers.map(c=>`<tr><td>${c.name}</td><td>${c.cpu}</td><td>${c.mem}</td><td>${badge(c.status)}</td></tr>`).join("");
+  $("#uptimeRows").innerHTML=D.uptime.map(u=>`<tr><td>${u.target}</td><td>${u.ok?badge("up"):badge("failed")}</td><td>${u.ms}ms</td></tr>`).join("");
+  $("#logBox").textContent=D.logs;
+  $("#timeline").innerHTML=D.timeline.map(t=>`<div class="tl-item ${t.cls}"><b>${t.t}</b> ${t.h}<br><span class="muted">${t.d}</span></div>`).join("");
+  $("#aiStats").innerHTML=`<table><tbody><tr><th>本日トークン</th><td>${D.aiStats.tokensToday}</td></tr><tr><th>無料枠</th><td>${D.aiStats.quota}</td></tr><tr><th>記憶</th><td>${D.aiStats.memory}</td></tr><tr><th>コスト</th><td>${D.aiStats.cost}</td></tr></tbody></table>`;
+  $("#thinkBox").textContent=D.think;$("#proBox").textContent=D.proactive;
+}
+
+// ---------- events ----------
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected","false"));
+  b.setAttribute("aria-selected","true");
+  ["overview","ops","server","ai"].forEach(k=>$("#tab-"+k).hidden=(k!==b.dataset.tab));
+}));
+$("#taskRows").addEventListener("click",async e=>{
+  const btn=e.target.closest("button[data-act]");if(!btn) return;
+  const {act,id}=btn.dataset;btn.disabled=true;
+  try{
+    if(act==="approve") await post(`/api/v1/tasks/${id}/approve`);
+    if(act==="reject") await post(`/api/v1/tasks/${id}/reject`);
+    if(act==="retry") await post(`/api/v1/runs/${id}/retry`);
+    if(act==="kill") await post(`/api/v1/runs/${id}/kill`);
+    toast(`${id} に ${act} を送りました`);await load();
+  }catch(err){toast("失敗："+err.message)}finally{btn.disabled=false}
+});
+$("#btnEnqueue").addEventListener("click",async()=>{
+  const kind=$("#newKind").value,model=$("#newModel").value,text=$("#newText").value.trim();
+  if(!text){toast("指示文を入力してください");return}
+  await post("/api/v1/tasks",{kind,model,text});$("#newText").value="";toast("キューに追加しました");await load();
+});
+$("#btnNotify").addEventListener("click",async()=>{await post("/api/v1/notify/test",{});toast("通知テストを送りました")});
+$("#btnRefresh").addEventListener("click",load);
+$("#btnSettings").addEventListener("click",()=>{
+  $("#cfgBase").value=CFG.base;$("#cfgToken").value=CFG.token;$("#cfgInterval").value=CFG.interval;
+  $("#settingsModal").classList.add("open");
+});
+$("#btnClose").addEventListener("click",()=>$("#settingsModal").classList.remove("open"));
+$("#btnSave").addEventListener("click",()=>{
+  CFG={base:$("#cfgBase").value.trim(),token:$("#cfgToken").value.trim(),interval:parseInt($("#cfgInterval").value,10)||15};
+  store.set("dots.apiBase",CFG.base);store.set("dots.token",CFG.token);store.set("dots.interval",String(CFG.interval));
+  DEMO=!CFG.base;$("#settingsModal").classList.remove("open");restart();toast(DEMO?"デモ表示に戻しました":"API接続に切替ました");
+});
+$("#btnDemo").addEventListener("click",()=>{
+  CFG={base:"",token:"",interval:15};store.set("dots.apiBase","");store.set("dots.token","");
+  DEMO=true;$("#settingsModal").classList.remove("open");restart();
+});
+let timer=null;
+function restart(){clearInterval(timer);load();timer=setInterval(()=>{if(!document.hidden)load()},CFG.interval*1000)}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)load()});
+restart();
+</script>
+</body>
+</html>
